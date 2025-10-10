@@ -116,6 +116,17 @@ class WebSocketMissionManager(private val viewModel: WayPointV3VM) : WebSocketLi
     }
 
     /**
+     * 【新增】自动化启动入口：直接接受航点列表，并开始生成、上传和启动流程。
+     */
+    fun startMissionProcessWithData(waypoints: List<ReceivedWaypoint>) {
+        // 原来的核心逻辑是 generateUploadAndStartMission，
+        // 且它接受 List<ReceivedWaypoint> 并执行 KMZ 生成和后续步骤。
+
+        // 确保这里的调用逻辑与你 Manager 内部的实现匹配
+        generateUploadAndStartMission(waypoints)
+    }
+
+    /**
      * 任务生成、写入 KMZ 文件、上传和执行。
      */
     private fun generateUploadAndStartMission(points: List<ReceivedWaypoint>) {

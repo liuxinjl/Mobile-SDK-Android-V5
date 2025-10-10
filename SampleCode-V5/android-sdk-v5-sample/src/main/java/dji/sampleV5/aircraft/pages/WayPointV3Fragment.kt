@@ -36,6 +36,8 @@ import dji.sampleV5.aircraft.R
 import dji.sampleV5.aircraft.databinding.FragWaypointv3PageBinding
 import dji.sampleV5.aircraft.models.MissionGlobalModel
 import dji.sampleV5.aircraft.models.WayPointV3VM
+import dji.sampleV5.aircraft.network.WebSocketMissionManager
+import dji.sampleV5.aircraft.network.models.ReceivedWaypoint
 import dji.sampleV5.aircraft.util.DialogUtil
 import dji.sampleV5.aircraft.util.ToastUtils
 import dji.sampleV5.aircraft.utils.KMZTestUtil
@@ -107,6 +109,9 @@ import java.io.IOException
  */
 class WayPointV3Fragment : DJIFragment() {
 
+    // (在类的顶部声明 Manager)
+    private lateinit var webSocketManager: WebSocketMissionManager
+
     private val wayPointV3VM: WayPointV3VM by activityViewModels()
     private var binding: FragWaypointv3PageBinding? = null
     private val WAYPOINT_SAMPLE_FILE_NAME: String = "waypointsample.kmz"
@@ -141,10 +146,20 @@ class WayPointV3Fragment : DJIFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        // 1. 初始化 Manager
+        webSocketManager = WebSocketMissionManager(wayPointV3VM)
+        WPMZManager.getInstance().init(ContextUtil.getContext())
+
+
+
         prepareMissionData()
         initView(savedInstanceState)
         initData()
-        WPMZManager.getInstance().init(ContextUtil.getContext())
+
+        // 2. 【自动化流程启动】: 界面加载完毕后立即触发
+        startAutomatedMissionImmediately()
+
     }
 
     private fun prepareMissionData() {
@@ -1124,5 +1139,34 @@ class WayPointV3Fragment : DJIFragment() {
                 it.remove()
             }
         }
+    }
+
+    private fun createStaticTestWaypoints(): List<ReceivedWaypoint> {
+        // 假设这些是你要飞行的航点：深圳某地的矩形航线
+        return listOf(
+            // 请确保 ReceivedWaypoint 和 LocationCoordinate2D 是可访问的
+            ReceivedWaypoint(lat = 22.540000, lng = 113.940000, alt = 50.0, speed = 8.0f),
+            ReceivedWaypoint(lat = 22.545000, lng = 113.940000, alt = 50.0, speed = 8.0f),
+            ReceivedWaypoint(lat = 22.545000, lng = 113.945000, alt = 50.0, speed = 8.0f),
+            ReceivedWaypoint(lat = 22.540000, lng = 113.945000, alt = 50.0, speed = 8.0f),
+            ReceivedWaypoint(lat = 22.540000, lng = 113.940000, alt = 50.0, speed = 8.0f)
+        )
+    }
+
+    /**
+     * 自动化任务启动函数，在界面加载时立即执行。
+     */
+    private fun startAutomatedMissionImmediately() {
+        val testWaypoints = createStaticTestWaypoints()
+
+        if (testWaypoints.isEmpty()) {
+            ToastUtils.showToast("错误：测试航点数据为空。")
+            return
+        }
+
+        ToastUtils.showToast("✅ 界面加载完毕，自动化任务流程启动！")
+
+        // 调用 Manager 的新入口，传入静态航点数据，开始所有后续操作。
+        webSocketManager.startMissionProcessWithData(testWaypoints)
     }
 }
