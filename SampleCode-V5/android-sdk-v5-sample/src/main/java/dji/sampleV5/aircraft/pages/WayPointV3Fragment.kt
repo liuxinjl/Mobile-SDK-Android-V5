@@ -158,7 +158,9 @@ class WayPointV3Fragment : DJIFragment() {
         initData()
 
         // 2. 【自动化流程启动】: 界面加载完毕后立即触发
-        startAutomatedMissionImmediately()
+//        startAutomatedMissionImmediately()
+
+        startAutoWebSocketMission()
 
     }
 
@@ -1168,5 +1170,23 @@ class WayPointV3Fragment : DJIFragment() {
 
         // 调用 Manager 的新入口，传入静态航点数据，开始所有后续操作。
         webSocketManager.startMissionProcessWithData(testWaypoints)
+    }
+
+    /**
+     * 触发 WebSocket 连接的辅助函数。
+     */
+    private fun startAutoWebSocketMission() {
+        // 【重要】：这里必须替换为你 WebSocket 服务器的真实地址
+        val websocketUrl = "ws://your_server_ip:port/mission_endpoint"
+
+        if (websocketUrl.contains("your_server_ip")) {
+            ToastUtils.showToast("警告：请设置正确的 WebSocket URL!")
+            return
+        }
+
+        ToastUtils.showToast("🚀 界面加载完成，自动连接 WebSocket...")
+
+        // 调用 Manager 的核心方法，启动连接和监听
+        webSocketManager.startAndListen(websocketUrl)
     }
 }
