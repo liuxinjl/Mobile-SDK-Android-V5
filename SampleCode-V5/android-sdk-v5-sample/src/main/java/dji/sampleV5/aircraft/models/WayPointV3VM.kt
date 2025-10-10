@@ -45,6 +45,9 @@ class WayPointV3VM : DJIViewModel() {
     val RadToDeg = 57.295779513082321
     val missionUploadState = MutableLiveData<MissionUploadStateInfo>()
 
+    // 【新增】：确保 MissionGlobalModel 作为一个 public 属性存在于 ViewModel 中
+    val missionGlobalModel: MissionGlobalModel = MissionGlobalModel()
+
     val flightControlState = MutableLiveData<FlightControlState>()
     var compassHeadKey: DJIKey<Double> = FlightControllerKey.KeyCompassHeading.create()
     var altitudeKey: DJIKey<Double> = FlightControllerKey.KeyAltitude.create()
