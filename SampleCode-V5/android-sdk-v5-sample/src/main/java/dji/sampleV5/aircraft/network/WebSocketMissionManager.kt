@@ -126,11 +126,22 @@ class WebSocketMissionManager(private val viewModel: WayPointV3VM) : WebSocketLi
 
         // 2. 写入临时 KMZ 文件
         val tempKmzPath = DiskUtil.getExternalCacheDirPath(ContextUtil.getContext(), "runtime_mission.kmz")
-        val result = WPMZManager.getInstance().generateKMZFile(tempKmzPath, mission, missionConfig, Template())
 
-        if (!result) {
-            ToastUtils.showToast("❌ 任务文件生成失败!")
-            isMissionProcessing = false // 失败，释放锁
+        // 调用 KMZ 文件生成方法。 注意：不再尝试接收返回值，因为它可能是 Unit。
+        WPMZManager.getInstance().generateKMZFile(
+            tempKmzPath,
+            mission,
+            missionConfig,
+            Template()
+        )
+        // 检查文件是否存在于本地磁盘
+        val generatedFile = File(tempKmzPath)
+
+        // 如果文件不存在（!generatedFile.exists() 返回 true），则流程失败
+        if (!generatedFile.exists()) {
+            ToastUtils.showToast("❌ 任务文件生成失败，文件不存在!")
+            // 失败，释放锁，并退出当前函数
+            isMissionProcessing = false
             return
         }
 
