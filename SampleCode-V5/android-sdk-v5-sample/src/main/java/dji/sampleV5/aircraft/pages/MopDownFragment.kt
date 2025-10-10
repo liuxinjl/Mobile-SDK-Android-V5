@@ -8,9 +8,9 @@ import android.widget.AdapterView
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
-import dji.sampleV5.aircraft.R
+import com.dji.sampleV5.aircraft.R
 import dji.sampleV5.aircraft.data.PipelineAdapter
-import dji.sampleV5.aircraft.databinding.FragMopDownPageBinding
+import com.dji.sampleV5.aircraft.databinding.FragMopDownPageBinding
 import dji.sampleV5.aircraft.models.MopVM
 import dji.sdk.keyvalue.value.common.ComponentIndexType
 import dji.sdk.keyvalue.value.mop.PipelineDeviceType

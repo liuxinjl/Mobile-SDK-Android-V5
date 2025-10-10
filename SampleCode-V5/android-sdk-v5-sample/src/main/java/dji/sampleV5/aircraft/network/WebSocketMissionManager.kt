@@ -19,7 +19,6 @@ import okhttp3.*
 import java.io.File
 import java.lang.reflect.Type
 
-
 class WebSocketMissionManager(private val viewModel: WayPointV3VM) : WebSocketListener() {
 
     private val TAG = "WebSocketMissionManager"
