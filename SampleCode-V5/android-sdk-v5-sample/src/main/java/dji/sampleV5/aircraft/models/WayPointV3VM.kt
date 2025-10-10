@@ -73,6 +73,39 @@ class WayPointV3VM : DJIViewModel() {
         })
     }
 
+    /**
+     * 【新增】重载函数：用于外部（如 WebSocketManager）启动任务时，提供一个简洁的回调，
+     * 以便在上传完成后执行下一步操作（例如：启动任务）。
+     */
+    fun pushKMZFileToAircraft(missionPath: String, callback: CommonCallbacks.CompletionCallback) {
+        WaypointMissionManager.getInstance().pushKMZFileToAircraft(missionPath, object :
+            CommonCallbacks.CompletionCallbackWithProgress<Double> {
+            override fun onProgressUpdate(progress: Double) {
+                // 虽然是简写回调，但进度更新仍更新 LiveData
+                missionUploadState.value = MissionUploadStateInfo(updateProgress = progress)
+                refreshMissionState()
+            }
+
+            override fun onSuccess() {
+                // 通知 LiveData
+                missionUploadState.value = MissionUploadStateInfo(tips = "Mission Upload Success")
+                refreshMissionState()
+
+                // 【核心】：调用传入的简化回调，通知外部上传已成功
+                callback.onSuccess()
+            }
+
+            override fun onFailure(error: IDJIError) {
+                // 通知 LiveData
+                missionUploadState.value = MissionUploadStateInfo(error = error)
+                refreshMissionState()
+
+                // 【核心】：调用传入的简化回调，通知外部上传已失败
+                callback.onFailure(error)
+            }
+        })
+    }
+
     private fun refreshMissionState() {
         missionUploadState.postValue(missionUploadState.value)
     }
