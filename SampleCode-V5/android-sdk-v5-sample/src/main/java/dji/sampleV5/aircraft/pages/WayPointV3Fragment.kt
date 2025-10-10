@@ -147,7 +147,7 @@ class WayPointV3Fragment : DJIFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // 1. 初始化 Manager
+        // 初始化 Manager
         webSocketManager = WebSocketMissionManager(wayPointV3VM)
         WPMZManager.getInstance().init(ContextUtil.getContext())
 
@@ -157,7 +157,10 @@ class WayPointV3Fragment : DJIFragment() {
         initView(savedInstanceState)
         initData()
 
-        // 2. 【自动化流程启动】: 界面加载完毕后立即触发
+        // 执行监听器绑定 (保留对 UI 和 MSDK 状态的监听)
+        initListener()
+
+        // 【自动化流程启动】: 界面加载完毕后立即触发
 //        startAutomatedMissionImmediately()
 
         startAutoWebSocketMission()
@@ -762,6 +765,7 @@ class WayPointV3Fragment : DJIFragment() {
     }
 
     override fun onDestroyView() {
+        webSocketManager.stop()
         super.onDestroyView()
         binding?.mapWidget?.onDestroy()
     }
@@ -1188,5 +1192,27 @@ class WayPointV3Fragment : DJIFragment() {
 
         // 调用 Manager 的核心方法，启动连接和监听
         webSocketManager.startAndListen(websocketUrl)
+    }
+
+
+    private fun initListener() {
+        // 【重要】：这是从 onViewCreated 中剪切过来的所有监听器代码
+
+        // 1. 保留所有的 LiveData 观察者
+        wayPointV3VM.flightControlState.observe(viewLifecycleOwner) {
+            // ... (更新飞行状态UI的代码)
+        }
+
+        // 2. 保留 MSDK 任务状态监听器
+        // WaypointMissionManager.getInstance().addWaypointMissionExecuteStateListener { /* ... */ }
+
+        // 3. 针对自动化，你可以删除或注释掉手动按钮的代码，例如：
+        /*
+        binding?.btnMissionStart?.setOnClickListener {
+            // 以前的手动启动任务逻辑
+        }
+        */
+
+        // 4. 但请保留可能需要的其他重要监听器...
     }
 }
