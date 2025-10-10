@@ -139,6 +139,70 @@ public class KMZTestUtil {
         return waypointInfo;
     }
 
+    /**
+     * 【新增】将接收到的 ReceivedWaypoint 列表转换为 WaylineMission 对象。
+     * 这个方法从 WebSocketManager中调用。
+     * * @param receivedPoints 包含经纬高坐标点的列表 (来自 WebSocket)
+     * @return 完整的 WaylineMission 对象
+     */
+    public static WaylineMission createMissionFromReceivedPoints(List<ReceivedWaypoint> receivedPoints) {
+        // 1. 创建 Wayline (航线) 和 Waypoints (航点) 列表
+        Wayline wayline = new Wayline();
+        List<WaylineWaypoint> waypoints = new ArrayList<>();
+
+        int index = 0;
+        for (ReceivedWaypoint point : receivedPoints) {
+            WaylineLocationCoordinate3D location = new WaylineLocationCoordinate3D(point.getLat(), point.getLng(), point.getAlt());
+
+            // --- V5 SDK WaylineWaypoint 构造参数 ---
+
+            // 1. 设置航向参数 (必须先创建)
+            WaylineWaypointYawParam yawParam = new WaylineWaypointYawParam();
+            yawParam.setYawMode(WaylineWaypointYawMode.CONTROL_BY_MISSION);
+            // setYawParam 接受一个 WaylineWaypointYawParam 对象，而不是直接在 Waypoint 上设置 yaw
+
+            // 2. 设置云台参数 (必须先创建)
+            // 注意：WaylineWaypointYawParam 和 WaylineWaypointGimbalHeadingParam 是 WaylineWaypoint 的必填字段
+            WaylineWaypointGimbalHeadingParam gimbalParam = new WaylineWaypointGimbalHeadingParam();
+            gimbalParam.setHeadingMode(WaylineWaypointGimbalHeadingMode.NONE);
+
+            // 3. 使用构造函数创建 WaylineWaypoint 对象
+            // WaylineWaypoint的构造函数接受所有关键参数！
+            WaylineWaypoint waypoint = new WaylineWaypoint(
+                    index,                      // waypointID (int)
+                    location,                   // location (WaylineLocationCoordinate3D)
+                    point.getSpeed().doubleValue(), // autoFlightSpeed (double)
+                    WaylineWaypointTurnMode.TO_POINT_AND_STOP_WITH_DISCONTINUITY_CURVATURE, // turnMode (WaylineWaypointTurnMode)
+                    WaylineWaypointPitchMode.USE_POINT_SETTING, // pitchMode (WaylineWaypointPitchMode)
+                    yawParam,                   // yawParam (WaylineWaypointYawParam)
+                    gimbalParam,                // gimbalHeadingParam (WaylineWaypointGimbalHeadingParam)
+                    new ArrayList<>(),          // actionInfos (List<WaylineActionInfo>)
+                    null,                       // actionGroupIds (List<Integer>)
+                    null                        // waylinePointActions (List<WaylineActionNodeList>)
+            );
+
+            waypoints.add(waypoint);
+            LogUtils.i(LogPath.SAMPLE, "Waypoint " + index + " created: Lat=" + point.getLat() + ", Alt=" + point.getAlt());
+            index++;
+        }
+
+        // 3. 封装到 Wayline 中
+        wayline.setWaylineID(0); // 第一条航线 ID 设为 0
+        wayline.setWaypoints(waypoints);
+
+        // 4. 封装到 WaylineMission 中
+        WaylineMission mission = new WaylineMission();
+        List<Wayline> waylines = new ArrayList<>();
+        waylines.add(wayline);
+        mission.setWaylines(waylines);
+
+        // 设置创建和更新时间
+        mission.setCreateTime(((Long)System.currentTimeMillis()).doubleValue());
+        mission.setUpdateTime(((Long)System.currentTimeMillis()).doubleValue());
+
+        return mission;
+    }
+
 
     public static  List<WaylineActionGroup> transformActionsFrom(List<WaypointInfoModel> waypointInfoModels) {
         List<WaylineActionGroup> actionGroups = new ArrayList<>();
@@ -189,6 +253,8 @@ public class KMZTestUtil {
 
         return actionGroups;
     }
+
+
 
     public static WaylineActionInfo createActionInfo(WaypointActionType actionType ,  Integer actionValue) {
 
