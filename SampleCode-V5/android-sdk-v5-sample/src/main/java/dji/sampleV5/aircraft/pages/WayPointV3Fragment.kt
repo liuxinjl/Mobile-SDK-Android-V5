@@ -1151,11 +1151,11 @@ class WayPointV3Fragment : DJIFragment() {
         // 假设这些是你要飞行的航点：深圳某地的矩形航线
         return listOf(
             // 请确保 ReceivedWaypoint 和 LocationCoordinate2D 是可访问的
-            ReceivedWaypoint(lat = 22.540000, lng = 113.940000, alt = 50.0, speed = 8.0f),
-            ReceivedWaypoint(lat = 22.545000, lng = 113.940000, alt = 50.0, speed = 8.0f),
-            ReceivedWaypoint(lat = 22.545000, lng = 113.945000, alt = 50.0, speed = 8.0f),
-            ReceivedWaypoint(lat = 22.540000, lng = 113.945000, alt = 50.0, speed = 8.0f),
-            ReceivedWaypoint(lat = 22.540000, lng = 113.940000, alt = 50.0, speed = 8.0f)
+            ReceivedWaypoint(lat = 22.540000, lng = 113.940000, alt = 50.0, speed = 8.0),
+            ReceivedWaypoint(lat = 22.545000, lng = 113.940000, alt = 50.0, speed = 8.0),
+            ReceivedWaypoint(lat = 22.545000, lng = 113.945000, alt = 50.0, speed = 8.0),
+            ReceivedWaypoint(lat = 22.540000, lng = 113.945000, alt = 50.0, speed = 8.0),
+            ReceivedWaypoint(lat = 22.540000, lng = 113.940000, alt = 50.0, speed = 8.0)
         )
     }
 

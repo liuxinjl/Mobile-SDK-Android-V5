@@ -144,71 +144,92 @@ public class KMZTestUtil {
         return waypointInfo;
     }
 
-    /**
-     * 【新增】将接收到的 ReceivedWaypoint 列表转换为 WaylineMission 对象。
-     * 这个方法从 WebSocketManager中调用。
-     * * @param receivedPoints 包含经纬高坐标点的列表 (来自 WebSocket)
-     * @return 完整的 WaylineMission 对象
-     */
     public static WaylineMission createMissionFromReceivedPoints(List<ReceivedWaypoint> receivedPoints) {
-        // 1. 创建 Wayline (航线) 和 Waypoints (航点) 列表
-        Wayline wayline = new Wayline();
         List<WaylineWaypoint> waypoints = new ArrayList<>();
+        WaylineLocationCoordinate3D poiLocation = null;  // 保持 3D 坐标用于 POI
 
-        int index = 0;
-        for (ReceivedWaypoint point : receivedPoints) {
-            WaylineLocationCoordinate3D location = new WaylineLocationCoordinate3D(point.getLat(), point.getLng(), point.getAlt());
+        for (int index = 0; index < receivedPoints.size(); index++) {
+            ReceivedWaypoint point = receivedPoints.get(index);
 
-            // --- V5 SDK WaylineWaypoint 构造参数 ---
+            // 航点使用 2D 坐标
+            WaylineLocationCoordinate2D location = new WaylineLocationCoordinate2D(
+                    point.getLat(),
+                    point.getLng()
+            );
 
-            // 1. 设置航向参数 (必须先创建)
+            // POI 使用 3D 坐标(包含高度)
+            if (poiLocation == null) {
+                poiLocation = new WaylineLocationCoordinate3D(
+                        point.getLat(),
+                        point.getLng(),
+                        point.getAlt()
+                );
+            }
+
+            // 航向参数使用 3D 的 POI 位置
             WaylineWaypointYawParam yawParam = new WaylineWaypointYawParam();
             yawParam.setYawMode(WaylineWaypointYawMode.FOLLOW_WAYLINE);
-            // setYawParam 接受一个 WaylineWaypointYawParam 对象，而不是直接在 Waypoint 上设置 yaw
+            yawParam.setPoiLocation(poiLocation);  // 这里需要 3D 坐标
 
-            // 2. 设置云台参数 (必须先创建)
-            // 注意：WaylineWaypointYawParam 和 WaylineWaypointGimbalHeadingParam 是 WaylineWaypoint 的必填字段
             WaylineWaypointGimbalHeadingParam gimbalParam = new WaylineWaypointGimbalHeadingParam();
             gimbalParam.setHeadingMode(WaylineWaypointGimbalHeadingMode.FOLLOW_WAYLINE);
 
-            // 3. 使用构造函数创建 WaylineWaypoint 对象
-            // WaylineWaypoint的构造函数接受所有关键参数！
-
+            // 使用正确的构造函数参数
             WaylineWaypoint waypoint = new WaylineWaypoint(
-                    index,                      // waypointID (int)
-                    location,                   // location (WaylineLocationCoordinate3D)
-                    point.speed, // autoFlightSpeed (double)
-                    WaylineWaypointTurnMode.TO_POINT_AND_STOP_WITH_DISCONTINUITY_CURVATURE, // turnMode (WaylineWaypointTurnMode)
-                    WaylineWaypointPitchMode.USE_POINT_SETTING, // pitchMode (WaylineWaypointPitchMode)
-                    yawParam,                   // yawParam (WaylineWaypointYawParam)
-                    gimbalParam,                // gimbalHeadingParam (WaylineWaypointGimbalHeadingParam)
-                    new ArrayList<>(),          // actionInfos (List<WaylineActionInfo>)
-                    null,                       // actionGroupIds (List<Integer>)
-                    null                        // waylinePointActions (List<WaylineActionNodeList>)
+                    index,                  // waypointIndex
+                    location,               // 2D 位置
+                    point.getAlt(),         // height
+                    false,                  // useGlobalFlightHeight
+                    null,                   // ellipsoidHeight
+                    yawParam,               // yawParam
+                    true,                   // isWaylineWaypointYawParamSet
+                    false,                  // useGlobalYawParam
+                    gimbalParam,            // gimbalHeadingParam
+                    true,                   // isWaylineWaypointGimbalHeadingParamSet
+                    false,                  // useGlobalGimbalHeadingParam
+                    null,                   // turnParam
+                    false,                  // isWaylineWaypointTurnParamSet
+                    true,                   // useGlobalTurnParam
+                    point.getSpeed(),       // speed
+                    false,                  // useGlobalAutoFlightSpeed
+                    true,                   // useStraightLine
+                    DEF_PITCH_ANGLE,        // gimbalPitchAngle
+                    true,                   // useGlobalActionGroup
+                    false                   // isRisky
             );
 
             waypoints.add(waypoint);
-            LogUtils.i(LogPath.SAMPLE, "Waypoint " + index + " created: Lat=" + point.getLat() + ", Alt=" + point.getAlt());
-            index++;
         }
 
-        // 3. 封装到 Wayline 中
-        wayline.setWaylineID(0); // 第一条航线 ID 设为 0
-        wayline.setWaypoints(waypoints);
+        // 模板配置
+        WaylineTemplateWaypointInfo waypointInfo = new WaylineTemplateWaypointInfo();
+        waypointInfo.setWaypoints(waypoints);
+        waypointInfo.setActionGroups(new ArrayList<>());
+        waypointInfo.setGlobalFlightHeight(DEF_GLOBAL_FLIGHT_HEIGHT);
+        waypointInfo.setIsGlobalFlightHeightSet(true);
+        waypointInfo.setGlobalTurnMode(WaylineWaypointTurnMode.TO_POINT_AND_STOP_WITH_DISCONTINUITY_CURVATURE);
+        waypointInfo.setUseStraightLine(true);
+        waypointInfo.setIsTemplateGlobalTurnModeSet(true);
 
-        // 4. 封装到 WaylineMission 中
-        WaylineMission mission = new WaylineMission();
-        List<Wayline> waylines = new ArrayList<>();
-        waylines.add(wayline);
-        mission.setWaylines(waylines);
+        // 全局航向参数也使用 3D 坐标
+        WaylineWaypointYawParam globalYawParam = new WaylineWaypointYawParam();
+        globalYawParam.setYawMode(WaylineWaypointYawMode.FOLLOW_WAYLINE);
+        globalYawParam.setPoiLocation(poiLocation);  // 3D 坐标
+        waypointInfo.setGlobalYawParam(globalYawParam);
+        waypointInfo.setIsTemplateGlobalYawParamSet(true);
+        waypointInfo.setPitchMode(WaylineWaypointPitchMode.USE_POINT_SETTING);
 
-        // 设置创建和更新时间
-        mission.setCreateTime(((Long)System.currentTimeMillis()).doubleValue());
-        mission.setUpdateTime(((Long)System.currentTimeMillis()).doubleValue());
+        Template template = new Template();
+        template.setWaypointInfo(waypointInfo);
+        template.setCoordinateParam(transCoordinateParamFrom());
+        template.setUseGlobalTransitionalSpeed(true);
+        template.setAutoFlightSpeed(DEF_AUTO_FLIGHT_SPEED);
+        template.setPayloadParam(new ArrayList<>());
 
-        return mission;
+        // 注意: WaylineMission 可能需要通过 KMZ 文件方式生成
+        // 而不是直接 set 配置和模板
+        return createWaylineMission();
     }
-
 
     public static  List<WaylineActionGroup> transformActionsFrom(List<WaypointInfoModel> waypointInfoModels) {
         List<WaylineActionGroup> actionGroups = new ArrayList<>();
