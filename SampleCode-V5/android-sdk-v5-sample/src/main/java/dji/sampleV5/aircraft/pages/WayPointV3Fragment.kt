@@ -161,9 +161,9 @@ class WayPointV3Fragment : DJIFragment() {
         initListener()
 
         // 【自动化流程启动】: 界面加载完毕后立即触发
-//        startAutomatedMissionImmediately()
+        startAutomatedMissionImmediately()
 
-        startAutoWebSocketMission()
+//        startAutoWebSocketMission()
 
     }
 

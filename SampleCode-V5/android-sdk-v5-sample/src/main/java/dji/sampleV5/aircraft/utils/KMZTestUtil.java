@@ -163,20 +163,21 @@ public class KMZTestUtil {
 
             // 1. 设置航向参数 (必须先创建)
             WaylineWaypointYawParam yawParam = new WaylineWaypointYawParam();
-            yawParam.setYawMode(WaylineWaypointYawMode.CONTROL_BY_MISSION);
+            yawParam.setYawMode(WaylineWaypointYawMode.FOLLOW_WAYLINE);
             // setYawParam 接受一个 WaylineWaypointYawParam 对象，而不是直接在 Waypoint 上设置 yaw
 
             // 2. 设置云台参数 (必须先创建)
             // 注意：WaylineWaypointYawParam 和 WaylineWaypointGimbalHeadingParam 是 WaylineWaypoint 的必填字段
             WaylineWaypointGimbalHeadingParam gimbalParam = new WaylineWaypointGimbalHeadingParam();
-            gimbalParam.setHeadingMode(WaylineWaypointGimbalHeadingMode.NONE);
+            gimbalParam.setHeadingMode(WaylineWaypointGimbalHeadingMode.FOLLOW_WAYLINE);
 
             // 3. 使用构造函数创建 WaylineWaypoint 对象
             // WaylineWaypoint的构造函数接受所有关键参数！
+
             WaylineWaypoint waypoint = new WaylineWaypoint(
                     index,                      // waypointID (int)
                     location,                   // location (WaylineLocationCoordinate3D)
-                    point.getSpeed().doubleValue(), // autoFlightSpeed (double)
+                    point.speed, // autoFlightSpeed (double)
                     WaylineWaypointTurnMode.TO_POINT_AND_STOP_WITH_DISCONTINUITY_CURVATURE, // turnMode (WaylineWaypointTurnMode)
                     WaylineWaypointPitchMode.USE_POINT_SETTING, // pitchMode (WaylineWaypointPitchMode)
                     yawParam,                   // yawParam (WaylineWaypointYawParam)
