@@ -32,8 +32,8 @@ import com.dji.wpmzsdk.common.data.HeightMode
 import com.dji.wpmzsdk.common.data.Template
 import com.dji.wpmzsdk.common.utils.kml.model.WaypointActionType
 import com.dji.wpmzsdk.manager.WPMZManager
-import com.dji.sampleV5.aircraft.R
-import com.dji.sampleV5.aircraft.databinding.FragWaypointv3PageBinding
+import dji.sampleV5.aircraft.R
+import dji.sampleV5.aircraft.databinding.FragWaypointv3PageBinding
 import dji.sampleV5.aircraft.models.MissionGlobalModel
 import dji.sampleV5.aircraft.models.WayPointV3VM
 import dji.sampleV5.aircraft.util.DialogUtil
