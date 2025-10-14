@@ -209,28 +209,83 @@ class WayPointV3Fragment : DJIFragment() {
         }
 
         binding?.btnMissionStart?.setOnClickListener {
-            val waypointFile = File(curMissionPath)
-            if (!waypointFile.exists()) {
-                ToastUtils.showToast("Please select file")
-                return@setOnClickListener
+//            val waypointFile = File(curMissionPath)
+//            if (!waypointFile.exists()) {
+//                ToastUtils.showToast("Please select file")
+//                return@setOnClickListener
+//            }
+//
+//            var curFlightMode = wayPointV3VM.getFlightMode()
+//            if (curFlightMode == FlightMode.GO_HOME || curFlightMode ==FlightMode.AUTO_LANDING) {
+//                ToastUtils.showToast("Please exit ${curFlightMode.name} mode")
+//                return@setOnClickListener
+//            }
+//
+//            wayPointV3VM.startMission(
+//                FileUtils.getFileName(curMissionPath, WAYPOINT_FILE_TAG),
+//                selectWaylines,
+//                object : CommonCallbacks.CompletionCallback {
+//                    override fun onSuccess() {
+//                        ToastUtils.showToast("startMission Success")
+//                    }
+//
+//                    override fun onFailure(error: IDJIError) {
+//                        ToastUtils.showToast("startMission Failed " + getErroMsg(error))
+//                    }
+//                })
+            // ✅ Step 1：准备自定义航点数据（示例）
+            val autoWaypoints = arrayListOf(
+                WaylineLocationCoordinate3D(22.540000, 113.940000, 50.0),
+                WaylineLocationCoordinate3D(22.545000, 113.940000, 50.0),
+                WaylineLocationCoordinate3D(22.545000, 113.945000, 50.0),
+                WaylineLocationCoordinate3D(22.540000, 113.945000, 50.0),
+                WaylineLocationCoordinate3D(22.540000, 113.940000, 50.0)
+            )
+
+            // ✅ Step 2：根据这些点生成 Waypoint 信息
+            showWaypoints.clear()
+            autoWaypoints.forEachIndexed { index, loc ->
+                val wp = WaypointInfoModel()
+                val waypoint = WaylineWaypoint()
+                waypoint.waypointIndex = index
+                waypoint.location = WaylineLocationCoordinate2D(loc.latitude, loc.longitude)
+                waypoint.height = loc.altitude
+                waypoint.ellipsoidHeight = loc.altitude
+                waypoint.speed = 3.0
+                waypoint.useGlobalTurnParam = true
+                wp.waylineWaypoint = waypoint
+                showWaypoints.add(wp)
             }
 
+            // ✅ Step 3：自动生成 KMZ 文件
+            val kmzOutPath = rootDir + "auto_generated.kmz"
+            val waylineMission = KMZTestUtil.createWaylineMission()
+            val missionConfig = KMZTestUtil.createMissionConfig(missionGlobalModel)
+            val template = KMZTestUtil.createTemplate(showWaypoints)
+
+            WPMZManager.getInstance().generateKMZFile(kmzOutPath, waylineMission, missionConfig, template)
+            curMissionPath = kmzOutPath
+            ToastUtils.showToast("自动生成KMZ成功: $kmzOutPath")
+
+            // ✅ Step 4：执行任务前检查
             var curFlightMode = wayPointV3VM.getFlightMode()
-            if (curFlightMode == FlightMode.GO_HOME || curFlightMode ==FlightMode.AUTO_LANDING) {
+            if (curFlightMode == FlightMode.GO_HOME || curFlightMode == FlightMode.AUTO_LANDING) {
                 ToastUtils.showToast("Please exit ${curFlightMode.name} mode")
                 return@setOnClickListener
             }
 
+            // ✅ Step 5：上传任务并执行
+            wayPointV3VM.pushKMZFileToAircraft(curMissionPath)
             wayPointV3VM.startMission(
                 FileUtils.getFileName(curMissionPath, WAYPOINT_FILE_TAG),
                 selectWaylines,
                 object : CommonCallbacks.CompletionCallback {
                     override fun onSuccess() {
-                        ToastUtils.showToast("startMission Success")
+                        ToastUtils.showToast("自动任务启动成功")
                     }
 
                     override fun onFailure(error: IDJIError) {
-                        ToastUtils.showToast("startMission Failed " + getErroMsg(error))
+                        ToastUtils.showToast("自动任务启动失败: " + getErroMsg(error))
                     }
                 })
 
