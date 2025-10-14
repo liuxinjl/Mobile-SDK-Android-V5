@@ -40,6 +40,7 @@ import dji.sampleV5.aircraft.util.DialogUtil
 import dji.sampleV5.aircraft.util.ToastUtils
 import dji.sampleV5.aircraft.utils.KMZTestUtil
 import dji.sampleV5.aircraft.utils.KMZTestUtil.createWaylineMission
+import dji.sampleV5.aircraft.utils.WaypointWebSocketClient
 import dji.sampleV5.aircraft.utils.wpml.WaypointInfoModel
 import dji.sdk.keyvalue.key.FlightControllerKey
 import dji.sdk.keyvalue.key.KeyTools
@@ -130,6 +131,12 @@ class WayPointV3Fragment : DJIFragment() {
     var curMissionExecuteState: WaypointMissionExecuteState? = null
     var selectWaylines: ArrayList<Int> = ArrayList()
 
+    // websocket 相关
+    private var webSocketClient: WaypointWebSocketClient? = null
+    // 接收到的航点列表
+    private var receivedWaypoints: ArrayList<WaylineLocationCoordinate3D> = ArrayList()
+
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -145,6 +152,109 @@ class WayPointV3Fragment : DJIFragment() {
         initView(savedInstanceState)
         initData()
         WPMZManager.getInstance().init(ContextUtil.getContext())
+
+        // 界面初始化后执行 websocket 初始化
+        initWebSocket()
+    }
+
+    /**
+     * 初始化 websocket
+     */
+    private fun initWebSocket() {
+        webSocketClient = WaypointWebSocketClient(
+            serverUrl = "ws://172.20.10.4:8080/waypoint",
+            onWaypointsReceived = { waypoints ->
+                requireActivity().runOnUiThread {
+                    receivedWaypoints.clear()
+                    receivedWaypoints.addAll(waypoints)
+                    ToastUtils.showToast("收到 ${waypoints.size} 个航点")
+                }
+            },
+            onMissionCommand = { command ->
+                requireActivity().runOnUiThread {
+                    handleMissionCommand(command)
+                }
+            }
+        )
+
+        webSocketClient?.connect()
+    }
+
+    private fun handleMissionCommand(command: WaypointWebSocketClient.MissionCommand) {
+        when (command.action) {
+            "start" -> {
+                // 检查是否有航点数据
+                if (receivedWaypoints.isEmpty()) {
+                    ToastUtils.showToast("没有可用的航点数据")
+                    return
+                }
+
+                // 执行启动任务的逻辑
+                startMission()
+            }
+
+            "pause" -> {
+                // 暂停任务
+                //pauseMission()
+                ToastUtils.showToast("pause command received")
+            }
+
+            "resume" -> {
+                // 恢复任务
+                //resumeMission()
+                ToastUtils.showToast("resume command received")
+            }
+
+            "stop" -> {
+                // 停止任务
+                //stopMission()
+                ToastUtils.showToast("stop command received")
+            }
+
+            else -> {
+                ToastUtils.showToast("未知命令: ${command.action}")
+            }
+        }
+    }
+
+    private fun startMission() {
+        // 生成 Waypoint 信息
+        showWaypoints.clear()
+        receivedWaypoints.forEachIndexed { index, loc ->
+            val wp = WaypointInfoModel()
+            val waypoint = WaylineWaypoint()
+            waypoint.waypointIndex = index
+            waypoint.location = WaylineLocationCoordinate2D(loc.latitude, loc.longitude)
+            waypoint.height = loc.altitude
+            waypoint.ellipsoidHeight = loc.altitude
+            waypoint.speed = 3.0
+            waypoint.useGlobalTurnParam = true
+            wp.waylineWaypoint = waypoint
+            showWaypoints.add(wp)
+        }
+
+        // 发送状态更新
+        webSocketClient?.sendStatus("mission_starting")
+
+        // 执行任务启动逻辑
+        // ... 你的任务启动代码
+
+        ToastUtils.showToast("任务已启动")
+    }
+
+    private fun pauseMission() {
+        // 实现暂停逻辑
+        webSocketClient?.sendStatus("mission_paused")
+    }
+
+    private fun resumeMission() {
+        // 实现恢复逻辑
+        webSocketClient?.sendStatus("mission_resumed")
+    }
+
+    private fun stopMission() {
+        // 实现停止逻辑
+        webSocketClient?.sendStatus("mission_stopped")
     }
 
     private fun prepareMissionData() {
@@ -257,38 +367,8 @@ class WayPointV3Fragment : DJIFragment() {
                 showWaypoints.add(wp)
             }
 
-            // ✅ Step 3：自动生成 KMZ 文件
-            val kmzOutPath = rootDir + "auto_generated.kmz"
-            val waylineMission = KMZTestUtil.createWaylineMission()
-            val missionConfig = KMZTestUtil.createMissionConfig(missionGlobalModel)
-            val template = KMZTestUtil.createTemplate(showWaypoints)
-
-            WPMZManager.getInstance().generateKMZFile(kmzOutPath, waylineMission, missionConfig, template)
-            curMissionPath = kmzOutPath
-            ToastUtils.showToast("自动生成KMZ成功: $kmzOutPath")
-
-            // ✅ Step 4：执行任务前检查
-            var curFlightMode = wayPointV3VM.getFlightMode()
-            if (curFlightMode == FlightMode.GO_HOME || curFlightMode == FlightMode.AUTO_LANDING) {
-                ToastUtils.showToast("Please exit ${curFlightMode.name} mode")
-                return@setOnClickListener
-            }
-
-            // ✅ Step 5：上传任务并执行
-            wayPointV3VM.pushKMZFileToAircraft(curMissionPath)
-            wayPointV3VM.startMission(
-                FileUtils.getFileName(curMissionPath, WAYPOINT_FILE_TAG),
-                selectWaylines,
-                object : CommonCallbacks.CompletionCallback {
-                    override fun onSuccess() {
-                        ToastUtils.showToast("自动任务启动成功")
-                    }
-
-                    override fun onFailure(error: IDJIError) {
-                        ToastUtils.showToast("自动任务启动失败: " + getErroMsg(error))
-                    }
-                })
-
+            // 生成 KMZ 文件并上传任务
+            generateAndUploadMission()
         }
 
         binding?.btnMissionPause?.setOnClickListener {
@@ -371,11 +451,9 @@ class WayPointV3Fragment : DJIFragment() {
                         resumeFromBreakPoint(missionName, it)
                     }
                 }
-
                 override fun onFailure(error: IDJIError) {
                     ToastUtils.showToast("queryBreakPointInfo error $error")
                 }
-
             })
         }
 
@@ -383,6 +461,48 @@ class WayPointV3Fragment : DJIFragment() {
 
         createMapView(savedInstanceState)
         observeAircraftLocation()
+    }
+
+    // 生成 kmz 文件并上传任务
+    private fun generateAndUploadMission() {
+        if (showWaypoints.isEmpty()) {
+            ToastUtils.showToast("没有航点数据，无法生成任务")
+            return
+        }
+
+        // ✅ Step 3：自动生成 KMZ 文件
+        val kmzOutPath = rootDir + "auto_generated.kmz"
+        val waylineMission = KMZTestUtil.createWaylineMission()
+        val missionConfig = KMZTestUtil.createMissionConfig(missionGlobalModel)
+        val template = KMZTestUtil.createTemplate(showWaypoints)
+
+        WPMZManager.getInstance().generateKMZFile(kmzOutPath, waylineMission, missionConfig, template)
+        curMissionPath = kmzOutPath
+        ToastUtils.showToast("自动生成KMZ成功: $kmzOutPath")
+
+        // ✅ Step 4：执行任务前检查
+        var curFlightMode = wayPointV3VM.getFlightMode()
+        if (curFlightMode == FlightMode.GO_HOME || curFlightMode == FlightMode.AUTO_LANDING) {
+            ToastUtils.showToast("Please exit ${curFlightMode.name} mode")
+            return
+        }
+
+        // ✅ Step 5：上传任务并执行
+        wayPointV3VM.pushKMZFileToAircraft(curMissionPath)
+        wayPointV3VM.startMission(
+            FileUtils.getFileName(curMissionPath, WAYPOINT_FILE_TAG),
+            selectWaylines,
+            object : CommonCallbacks.CompletionCallback {
+                override fun onSuccess() {
+                    ToastUtils.showToast("自动任务启动成功")
+                }
+
+                override fun onFailure(error: IDJIError) {
+                    ToastUtils.showToast("自动任务启动失败: " + getErroMsg(error))
+                }
+            })
+
+
     }
 
     private fun saveKmz(showToast: Boolean) {
@@ -816,6 +936,7 @@ class WayPointV3Fragment : DJIFragment() {
                 it.dispose()
             }
         }
+        webSocketClient?.disconnect()
     }
 
     fun getErroMsg(error: IDJIError): String {
