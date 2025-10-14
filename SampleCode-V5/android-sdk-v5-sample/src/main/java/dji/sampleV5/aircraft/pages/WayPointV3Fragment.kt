@@ -236,9 +236,9 @@ class WayPointV3Fragment : DJIFragment() {
             // ✅ Step 1：准备自定义航点数据（示例）
             val autoWaypoints = arrayListOf(
                 WaylineLocationCoordinate3D(22.540000, 113.940000, 50.0),
-                WaylineLocationCoordinate3D(22.545000, 113.940000, 50.0),
-                WaylineLocationCoordinate3D(22.545000, 113.945000, 50.0),
-                WaylineLocationCoordinate3D(22.540000, 113.945000, 50.0),
+                WaylineLocationCoordinate3D(22.540000, 113.940195, 50.0),
+                WaylineLocationCoordinate3D(22.540180, 113.940195, 50.0),
+                WaylineLocationCoordinate3D(22.540180, 113.940000, 50.0),
                 WaylineLocationCoordinate3D(22.540000, 113.940000, 50.0)
             )
 

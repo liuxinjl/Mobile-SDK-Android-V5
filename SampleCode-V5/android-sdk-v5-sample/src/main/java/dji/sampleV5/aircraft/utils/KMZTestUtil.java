@@ -1,5 +1,7 @@
 package dji.sampleV5.aircraft.utils;
 
+import android.util.Log;
+
 import dji.sampleV5.aircraft.network.models.ReceivedWaypoint;
 import dji.sdk.wpmz.value.mission.* ;
 import dji.v5.utils.common.LogUtils;
@@ -121,14 +123,96 @@ public class KMZTestUtil {
     public static  WaylineTemplateWaypointInfo createTemplateWaypointInfo(List<WaypointInfoModel> waypointInfoModels) {
         WaylineLocationCoordinate3D poiLocation = new WaylineLocationCoordinate3D();
         List<WaylineWaypoint> waypoints = new ArrayList<>();
-        for (WaypointInfoModel infoModel:waypointInfoModels){
-            waypoints.add(infoModel.getWaylineWaypoint());
-            poiLocation =  infoModel.getWaylineWaypoint().getYawParam().getPoiLocation();
+//        for (WaypointInfoModel infoModel:waypointInfoModels){
+//            waypoints.add(infoModel.getWaylineWaypoint());
+//            poiLocation =  infoModel.getWaylineWaypoint().getYawParam().getPoiLocation();
+//
+//        }
+//
+//        for (int i = 0; i < waypointInfoModels.size(); i++) {
+//            WaypointInfoModel infoModel = waypointInfoModels.get(i);
+//
+//            if (infoModel == null) {
+//                Log.e("WaypointCrash", "WaypointInfoModel at index " + i + " is null, skipping");
+//                continue;
+//            }
+//
+//            WaylineWaypoint wp = infoModel.getWaylineWaypoint();
+//            if (wp == null) {
+//                Log.e("WaypointCrash", "WaylineWaypoint at index " + i + " is null, skipping");
+//                continue;
+//            }
+//
+//            waypoints.add(wp);
+//
+//            WaylineWaypointYawParam yawParam = wp.getYawParam();
+//            if (yawParam == null) {
+//                Log.e("WaypointCrash", "YawParam at index " + i + " is null, skipping");
+//                continue;
+//            }
+//
+//            WaylineLocationCoordinate3D poi = yawParam.getPoiLocation();
+//            if (poi == null) {
+//                Log.e("WaypointCrash", "PoiLocation at index " + i + " is null, skipping");
+//                continue;
+//            }
+//
+//            poiLocation = poi;
+//            Log.d("WaypointDebug", "Waypoint " + i + " valid, POI: " + poiLocation.toString());
+//        }
+        for (int i = 0; i < waypointInfoModels.size(); i++) {
+            WaypointInfoModel infoModel = waypointInfoModels.get(i);
+
+            if (infoModel == null) {
+                Log.e("WaypointCrash", "WaypointInfoModel at index " + i + " is null, skipping");
+                continue;
+            }
+
+            WaylineWaypoint wp = infoModel.getWaylineWaypoint();
+            if (wp == null) {
+                Log.e("WaypointCrash", "WaylineWaypoint at index " + i + " is null, skipping");
+                continue;
+            }
+
+            // ✅ 如果 YawParam 为空，自动创建一个
+            WaylineWaypointYawParam yawParam = wp.getYawParam();
+            if (yawParam == null) {
+                Log.w("WaypointFix", "YawParam at index " + i + " is null, creating default one");
+                yawParam = new WaylineWaypointYawParam();
+                yawParam.setEnableYawAngle(true);
+                yawParam.setYawAngle(0.0);
+                yawParam.setYawMode(WaylineWaypointYawMode.SMOOTH_TRANSITION);
+                yawParam.setYawPathMode(WaylineWaypointYawPathMode.FOLLOW_BAD_ARC);
+                // 默认 POI 设为该航点位置
+                yawParam.setPoiLocation(new WaylineLocationCoordinate3D(
+                        wp.getLocation().getLatitude(),
+                        wp.getLocation().getLongitude(),
+                        wp.getHeight()
+                ));
+                wp.setYawParam(yawParam);
+            }
+
+            // ✅ 如果 poiLocation 为空，也补充默认值
+            WaylineLocationCoordinate3D poi = yawParam.getPoiLocation();
+            if (poi == null) {
+                Log.w("WaypointFix", "PoiLocation at index " + i + " is null, using waypoint location instead");
+                poi = new WaylineLocationCoordinate3D(
+                        wp.getLocation().getLatitude(),
+                        wp.getLocation().getLongitude(),
+                        wp.getHeight()
+                );
+                yawParam.setPoiLocation(poi);
+            }
+
+            poiLocation = poi; // 保留最后一个 POI
+            waypoints.add(wp);
+
+            Log.d("WaypointDebug", "Waypoint " + i + " added, POI: " + poiLocation.toString());
         }
 
         WaylineTemplateWaypointInfo waypointInfo = new WaylineTemplateWaypointInfo();
         waypointInfo.setWaypoints(waypoints);
-        waypointInfo.setActionGroups(transformActionsFrom(waypointInfoModels));
+//        waypointInfo.setActionGroups(transformActionsFrom(waypointInfoModels));
         waypointInfo.setGlobalFlightHeight(DEF_GLOBAL_FLIGHT_HEIGHT);
         waypointInfo.setIsGlobalFlightHeightSet(true);
         waypointInfo.setGlobalTurnMode(WaylineWaypointTurnMode.TO_POINT_AND_STOP_WITH_DISCONTINUITY_CURVATURE);
@@ -155,7 +239,7 @@ public class KMZTestUtil {
 
         for (int i = 0; i < waypoints.size(); ++i) {
             List<WaylineActionInfo> actionInfos = waypointInfoModels.get(i).getActionInfos();
-            if (actionInfos.size() > 0) {
+            if (!actionInfos.isEmpty()) {
                 WaylineActionGroup actionGroup = new WaylineActionGroup();
                 WaylineActionTrigger trigger = new WaylineActionTrigger();
                 trigger.setTriggerType(WaylineActionTriggerType.REACH_POINT);
