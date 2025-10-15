@@ -215,6 +215,14 @@ class WayPointV3Fragment : DJIFragment() {
                 ToastUtils.showToast("stop command received")
             }
 
+            "waypoints" -> {
+                // 传入新的航点
+                // 停止当前任务
+                stopMission()
+                ToastUtils.showToast("waypoints command received")
+                startMission()
+            }
+
             else -> {
                 ToastUtils.showToast("未知命令: ${command.action}")
             }
@@ -295,6 +303,10 @@ class WayPointV3Fragment : DJIFragment() {
                     ToastUtils.showToast("stopMission Failed " + getErroMsg(error))
                 }
             })
+    }
+
+    private fun generateNewMission(){
+        // 生成新的航点任务
     }
 
     private fun prepareMissionData() {
