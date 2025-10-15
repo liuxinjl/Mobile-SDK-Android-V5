@@ -101,6 +101,8 @@ import java.io.File
 import java.io.IOException
 
 
+
+
 /**
  * @author feel.feng
  * @time 2022/02/27 9:30 上午
@@ -137,6 +139,7 @@ class WayPointV3Fragment : DJIFragment() {
     private var receivedWaypoints: ArrayList<WaylineLocationCoordinate3D> = ArrayList()
 
 
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -162,7 +165,8 @@ class WayPointV3Fragment : DJIFragment() {
      */
     private fun initWebSocket() {
         webSocketClient = WaypointWebSocketClient(
-            serverUrl = "ws://172.20.10.4:8080/waypoint",
+//            serverUrl = "ws://172.20.10.4:8080/waypoint",
+            serverUrl = "ws://10.10.41.24:8080/waypoint",
             onWaypointsReceived = { waypoints ->
                 requireActivity().runOnUiThread {
                     receivedWaypoints.clear()
@@ -195,19 +199,19 @@ class WayPointV3Fragment : DJIFragment() {
 
             "pause" -> {
                 // 暂停任务
-                //pauseMission()
+                pauseMission()
                 ToastUtils.showToast("pause command received")
             }
 
             "resume" -> {
                 // 恢复任务
-                //resumeMission()
+                resumeMission()
                 ToastUtils.showToast("resume command received")
             }
 
             "stop" -> {
                 // 停止任务
-                //stopMission()
+                stopMission()
                 ToastUtils.showToast("stop command received")
             }
 
@@ -237,7 +241,8 @@ class WayPointV3Fragment : DJIFragment() {
         webSocketClient?.sendStatus("mission_starting")
 
         // 执行任务启动逻辑
-        // ... 你的任务启动代码
+        // 生成KMZ文件、上传并执行任务
+        generateAndStartMissionbyDJI()
 
         ToastUtils.showToast("任务已启动")
     }
@@ -245,16 +250,51 @@ class WayPointV3Fragment : DJIFragment() {
     private fun pauseMission() {
         // 实现暂停逻辑
         webSocketClient?.sendStatus("mission_paused")
+        wayPointV3VM.pauseMission(object : CommonCallbacks.CompletionCallback {
+            override fun onSuccess() {
+                ToastUtils.showToast("pauseMission Success")
+            }
+
+            override fun onFailure(error: IDJIError) {
+                ToastUtils.showToast("pauseMission Failed " + getErroMsg(error))
+            }
+        })
     }
 
     private fun resumeMission() {
         // 实现恢复逻辑
         webSocketClient?.sendStatus("mission_resumed")
+        wayPointV3VM.resumeMission(object : CommonCallbacks.CompletionCallback {
+            override fun onSuccess() {
+                ToastUtils.showToast("resumeMission Success")
+            }
+
+            override fun onFailure(error: IDJIError) {
+                ToastUtils.showToast("resumeMission Failed " + getErroMsg(error))
+            }
+        })
     }
 
     private fun stopMission() {
         // 实现停止逻辑
         webSocketClient?.sendStatus("mission_stopped")
+        if (curMissionExecuteState == WaypointMissionExecuteState.READY) {
+            ToastUtils.showToast("Mission not start")
+        }
+        if (TextUtils.isEmpty(curMissionPath)) {
+            ToastUtils.showToast("curMissionPath is Empty")
+        }
+        wayPointV3VM.stopMission(
+            FileUtils.getFileName(curMissionPath, WAYPOINT_FILE_TAG),
+            object : CommonCallbacks.CompletionCallback {
+                override fun onSuccess() {
+                    ToastUtils.showToast("stopMission Success")
+                }
+
+                override fun onFailure(error: IDJIError) {
+                    ToastUtils.showToast("stopMission Failed " + getErroMsg(error))
+                }
+            })
     }
 
     private fun prepareMissionData() {
@@ -367,8 +407,8 @@ class WayPointV3Fragment : DJIFragment() {
                 showWaypoints.add(wp)
             }
 
-            // 生成 KMZ 文件并上传任务
-            generateAndUploadMission()
+            // 生成KMZ文件、上传并执行任务
+            generateAndStartMissionbyDJI()
         }
 
         binding?.btnMissionPause?.setOnClickListener {
@@ -464,7 +504,7 @@ class WayPointV3Fragment : DJIFragment() {
     }
 
     // 生成 kmz 文件并上传任务
-    private fun generateAndUploadMission() {
+    private fun generateAndStartMissionbyDJI() {
         if (showWaypoints.isEmpty()) {
             ToastUtils.showToast("没有航点数据，无法生成任务")
             return
@@ -1301,4 +1341,18 @@ class WayPointV3Fragment : DJIFragment() {
             }
         }
     }
+
+//    fun startReturnHome() {
+//        // 创建“返航”ActionKey
+//        val goHomeKey = KeyTools.createKey(FlightControllerKey.KeyStartGoHome)
+//
+//        // 执行返航动作
+//        try {
+//            // 使用泛型 performAction<>
+//            KeyManager.getInstance().performAction<Boolean>(goHomeKey)
+//            ToastUtils.showToast("✅ Start go home success")
+//        } catch (e: Exception) {
+//            ToastUtils.showToast("❌ Start go home failed: ${e.message}")
+//        }
+//    }
 }
