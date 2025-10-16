@@ -212,7 +212,7 @@ public class KMZTestUtil {
 
         WaylineTemplateWaypointInfo waypointInfo = new WaylineTemplateWaypointInfo();
         waypointInfo.setWaypoints(waypoints);
-//        waypointInfo.setActionGroups(transformActionsFrom(waypointInfoModels));
+        waypointInfo.setActionGroups(transformActionsFrom(waypointInfoModels));
         waypointInfo.setGlobalFlightHeight(DEF_GLOBAL_FLIGHT_HEIGHT);
         waypointInfo.setIsGlobalFlightHeightSet(true);
         waypointInfo.setGlobalTurnMode(WaylineWaypointTurnMode.TO_POINT_AND_STOP_WITH_DISCONTINUITY_CURVATURE);

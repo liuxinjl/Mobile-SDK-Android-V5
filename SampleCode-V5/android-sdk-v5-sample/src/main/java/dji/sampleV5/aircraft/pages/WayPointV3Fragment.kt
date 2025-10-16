@@ -300,6 +300,7 @@ class WayPointV3Fragment : DJIFragment() {
     }
 
     private fun stopMission() {
+        showWaypoints.clear()
         // 实现停止逻辑
         webSocketClient?.sendStatus("mission_stopped")
         if (curMissionExecuteState == WaypointMissionExecuteState.READY) {
