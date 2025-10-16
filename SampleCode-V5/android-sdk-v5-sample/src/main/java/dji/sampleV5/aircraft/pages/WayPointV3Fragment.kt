@@ -99,6 +99,7 @@ import io.reactivex.rxjava3.disposables.Disposable
 import io.reactivex.rxjava3.schedulers.Schedulers
 import java.io.File
 import java.io.IOException
+import dji.sdk.wpmz.value.mission.ActionAircraftHoverParam
 
 
 
@@ -137,6 +138,8 @@ class WayPointV3Fragment : DJIFragment() {
     private var webSocketClient: WaypointWebSocketClient? = null
     // 接收到的航点列表
     private var receivedWaypoints: ArrayList<WaylineLocationCoordinate3D> = ArrayList()
+
+    val hoverSeconds = 10.0
 
 
 
@@ -234,14 +237,27 @@ class WayPointV3Fragment : DJIFragment() {
         showWaypoints.clear()
         receivedWaypoints.forEachIndexed { index, loc ->
             val wp = WaypointInfoModel()
-            val waypoint = WaylineWaypoint()
-            waypoint.waypointIndex = index
-            waypoint.location = WaylineLocationCoordinate2D(loc.latitude, loc.longitude)
-            waypoint.height = loc.altitude
-            waypoint.ellipsoidHeight = loc.altitude
-            waypoint.speed = 3.0
-            waypoint.useGlobalTurnParam = true
+            // 创建航点
+            val waypoint = WaylineWaypoint().apply {
+                waypointIndex = index
+                location = WaylineLocationCoordinate2D(loc.latitude, loc.longitude)
+                height = loc.altitude
+                ellipsoidHeight = loc.altitude
+                speed = 3.0
+                useGlobalTurnParam = true
+            }
+
+            // 创建悬停动作
+            val hoverAction = WaylineActionInfo().apply {
+                actionType = WaylineActionType.HOVER
+                val param = ActionAircraftHoverParam()
+                param.hoverTime = hoverSeconds
+                aircraftHoverParam = param
+            }
+
+            // 为当前航点绑定动作
             wp.waylineWaypoint = waypoint
+            wp.actionInfos = listOf(hoverAction)   // ✅ 每个航点都包含悬停动作
             showWaypoints.add(wp)
         }
 
