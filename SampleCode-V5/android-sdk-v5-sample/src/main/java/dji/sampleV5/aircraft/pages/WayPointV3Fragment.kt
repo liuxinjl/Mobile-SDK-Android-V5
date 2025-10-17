@@ -137,7 +137,7 @@ class WayPointV3Fragment : DJIFragment() {
     // websocket 相关
     private var webSocketClient: WaypointWebSocketClient? = null
     // 接收到的航点列表
-    private var receivedWaypoints: ArrayList<WaylineLocationCoordinate3D> = ArrayList()
+    private var receivedWaypoints: ArrayList<WaypointWebSocketClient.CoordinateDto> = ArrayList()
 
     val hoverSeconds = 10.0
 
@@ -251,7 +251,8 @@ class WayPointV3Fragment : DJIFragment() {
             val hoverAction = WaylineActionInfo().apply {
                 actionType = WaylineActionType.HOVER
                 val param = ActionAircraftHoverParam()
-                param.hoverTime = hoverSeconds
+                // 配置从外部接收的悬停时间
+                param.hoverTime = loc.duration
                 aircraftHoverParam = param
             }
 

@@ -6,10 +6,11 @@ import dji.sdk.wpmz.value.mission.WaylineLocationCoordinate3D
 import dji.v5.utils.common.LogUtils
 import okhttp3.*
 import okio.ByteString
+import kotlin.time.Duration
 
 class WaypointWebSocketClient(
     private val serverUrl: String,
-    private val onWaypointsReceived: (List<WaylineLocationCoordinate3D>) -> Unit,
+    private val onWaypointsReceived: (List<CoordinateDto>) -> Unit,
     private val onMissionCommand: (MissionCommand) -> Unit
 ) {
     private var webSocket: WebSocket? = null
@@ -36,17 +37,18 @@ class WaypointWebSocketClient(
                         "waypoints" -> {
                             // 解析航点数据
                             val type = object : TypeToken<List<CoordinateDto>>() {}.type
+                            // 转换 data 部分为 JSON 字符串再解析为 List<CoordinateDto>
                             val coordinates: List<CoordinateDto> = gson.fromJson(
                                 gson.toJson(message.data),
                                 type
                             )
 
-                            val waypoints = coordinates.map {
-                                WaylineLocationCoordinate3D(it.latitude, it.longitude, it.altitude)
-                            }
-
-                            onWaypointsReceived(waypoints)
-                            LogUtils.i("WebSocket", "收到 ${waypoints.size} 个航点")
+//                            val waypoints = coordinates.map {
+//                                WaylineLocationCoordinate3D(it.latitude, it.longitude, it.altitude)
+//                            }
+                            // 直接回调航点数据
+                            onWaypointsReceived(coordinates)
+                            LogUtils.i("WebSocket", "收到 ${coordinates.size} 个航点")
                         }
 
                         "command" -> {
@@ -100,7 +102,8 @@ class WaypointWebSocketClient(
     data class CoordinateDto(
         val latitude: Double,
         val longitude: Double,
-        val altitude: Double
+        val altitude: Double,
+        val duration: Double
     )
 
     data class WebSocketMessage(
