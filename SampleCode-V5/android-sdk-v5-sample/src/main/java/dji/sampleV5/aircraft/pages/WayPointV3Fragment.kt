@@ -169,7 +169,7 @@ class WayPointV3Fragment : DJIFragment() {
     private fun initWebSocket() {
         webSocketClient = WaypointWebSocketClient(
 //            serverUrl = "ws://172.20.10.4:8080/waypoint",
-            serverUrl = "ws://10.10.41.24:8080/waypoint",
+            serverUrl = "ws://172.20.10.7:8080/waypoint",
             onWaypointsReceived = { waypoints ->
                 requireActivity().runOnUiThread {
                     receivedWaypoints.clear()
@@ -195,7 +195,6 @@ class WayPointV3Fragment : DJIFragment() {
                     ToastUtils.showToast("没有可用的航点数据")
                     return
                 }
-
                 // 执行启动任务的逻辑
                 startMission()
             }
@@ -218,13 +217,14 @@ class WayPointV3Fragment : DJIFragment() {
                 ToastUtils.showToast("stop command received")
             }
 
-            "waypoints" -> {
-                // 传入新的航点
-                // 停止当前任务
-                stopMission()
-                ToastUtils.showToast("waypoints command received")
-                startMission()
-            }
+//            "waypoints" -> {
+//                // 传入新的航点
+//                // 停止当前任务
+//                stopMission()
+//                ToastUtils.showToast("waypoints command received")
+//                //开始新任务
+//                startMission()
+//            }
 
             else -> {
                 ToastUtils.showToast("未知命令: ${command.action}")
@@ -243,7 +243,7 @@ class WayPointV3Fragment : DJIFragment() {
                 location = WaylineLocationCoordinate2D(loc.latitude, loc.longitude)
                 height = loc.altitude
                 ellipsoidHeight = loc.altitude
-                speed = 3.0
+                speed = 10.0
                 useGlobalTurnParam = true
             }
 
@@ -431,7 +431,7 @@ class WayPointV3Fragment : DJIFragment() {
                 waypoint.location = WaylineLocationCoordinate2D(loc.latitude, loc.longitude)
                 waypoint.height = loc.altitude
                 waypoint.ellipsoidHeight = loc.altitude
-                waypoint.speed = 3.0
+                waypoint.speed = 10.0
                 waypoint.useGlobalTurnParam = true
                 wp.waylineWaypoint = waypoint
                 showWaypoints.add(wp)

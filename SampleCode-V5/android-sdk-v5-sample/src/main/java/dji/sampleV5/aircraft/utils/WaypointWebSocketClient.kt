@@ -6,6 +6,7 @@ import dji.sdk.wpmz.value.mission.WaylineLocationCoordinate3D
 import dji.v5.utils.common.LogUtils
 import okhttp3.*
 import okio.ByteString
+import java.util.UUID
 import kotlin.time.Duration
 
 class WaypointWebSocketClient(
@@ -20,7 +21,7 @@ class WaypointWebSocketClient(
     fun connect() {
         val request = Request.Builder()
             .url(serverUrl)
-            .addHeader("X-Client-Id", "001")  // 通过
+            .addHeader("X-Client-Id", UUID.randomUUID().toString())  // 通过
             .build()
 
         webSocket = client.newWebSocket(request, object : WebSocketListener() {
