@@ -100,8 +100,7 @@ import io.reactivex.rxjava3.schedulers.Schedulers
 import java.io.File
 import java.io.IOException
 import dji.sdk.wpmz.value.mission.ActionAircraftHoverParam
-
-
+import dji.sdk.wpmz.value.mission.ActionGimbalRotateParam
 
 
 /**
@@ -123,7 +122,7 @@ class WayPointV3Fragment : DJIFragment() {
     private val OPEN_FILE_CHOOSER = 0
     private val OPEN_DOCUMENT_TREE = 1
     private val OPEN_MANAGE_EXTERNAL_STORAGE = 2
-    private val missionGlobalModel= MissionGlobalModel()
+    private val missionGlobalModel= MissionGlobalModel(10.0)
 
     private val showWaypoints: ArrayList<WaypointInfoModel> = ArrayList()
     private val interestPoint : WaylineLocationCoordinate3D = WaylineLocationCoordinate3D()
@@ -169,7 +168,7 @@ class WayPointV3Fragment : DJIFragment() {
     private fun initWebSocket() {
         webSocketClient = WaypointWebSocketClient(
 //            serverUrl = "ws://172.20.10.4:8080/waypoint",
-            serverUrl = "ws://172.20.10.7:8080/waypoint",
+            serverUrl = "ws://192.168.111.110:8080/waypoint",
             onWaypointsReceived = { waypoints ->
                 requireActivity().runOnUiThread {
                     receivedWaypoints.clear()
@@ -247,13 +246,18 @@ class WayPointV3Fragment : DJIFragment() {
                 useGlobalTurnParam = true
             }
 
-            // 创建悬停动作
+            // 创建悬停动作 设置云台
             val hoverAction = WaylineActionInfo().apply {
                 actionType = WaylineActionType.HOVER
-                val param = ActionAircraftHoverParam()
-                // 配置从外部接收的悬停时间
-                param.hoverTime = loc.duration
-                aircraftHoverParam = param
+                aircraftHoverParam = ActionAircraftHoverParam().apply {
+                    hoverTime = loc.duration
+                }
+                // 设置云台动作为不动
+                gimbalRotateParam = ActionGimbalRotateParam().apply {
+                    enablePitch = false
+                    enableYaw = false;
+                    enableRoll = false;
+                }
             }
 
             // 为当前航点绑定动作
@@ -539,13 +543,17 @@ class WayPointV3Fragment : DJIFragment() {
             ToastUtils.showToast("没有航点数据，无法生成任务")
             return
         }
+        // 构建与时间对应的文件名
+        var fileName = "auto_mission_" + System.currentTimeMillis() + ".kmz"
 
         // ✅ Step 3：自动生成 KMZ 文件
-        val kmzOutPath = rootDir + "auto_generated.kmz"
+        val kmzOutPath = rootDir + fileName
         val waylineMission = KMZTestUtil.createWaylineMission()
         val missionConfig = KMZTestUtil.createMissionConfig(missionGlobalModel)
+        //
         val template = KMZTestUtil.createTemplate(showWaypoints)
 
+        //
         WPMZManager.getInstance().generateKMZFile(kmzOutPath, waylineMission, missionConfig, template)
         curMissionPath = kmzOutPath
         ToastUtils.showToast("自动生成KMZ成功: $kmzOutPath")
@@ -556,6 +564,9 @@ class WayPointV3Fragment : DJIFragment() {
             ToastUtils.showToast("Please exit ${curFlightMode.name} mode")
             return
         }
+
+        // 选择默认的航点
+//        selectWaylines.add(0)
 
         // ✅ Step 5：上传任务并执行
         wayPointV3VM.pushKMZFileToAircraft(curMissionPath)

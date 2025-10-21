@@ -64,7 +64,7 @@ public class KMZTestUtil {
     public static final WaylineExitOnRCLostBehavior DEF_EXIT_RC_LOST_BEHAV = WaylineExitOnRCLostBehavior.EXCUTE_RC_LOST_ACTION;
     public static final WaylineExitOnRCLostAction DEF_RC_LOST_ACTION =  WaylineExitOnRCLostAction.GO_BACK;
     public static final Double DEF_GLOBAL_TRANSITION_SPEED = 10d;
-    public static final Double DEF_AUTO_FLIGHT_SPEED = 5d;
+    public static final Double DEF_AUTO_FLIGHT_SPEED = 10d;
     public static final Double DEF_GLOBAL_FLIGHT_HEIGHT = 100d;
     public static final WaylineCoordinateMode DEF_COR_MODE = WaylineCoordinateMode.WGS84;
     public static final WaylinePositioningType DEF_POSITION_TYPE = WaylinePositioningType.GPS;
@@ -216,8 +216,8 @@ public class KMZTestUtil {
         waypointInfo.setGlobalFlightHeight(DEF_GLOBAL_FLIGHT_HEIGHT);
         waypointInfo.setIsGlobalFlightHeightSet(true);
         waypointInfo.setGlobalTurnMode(WaylineWaypointTurnMode.TO_POINT_AND_STOP_WITH_DISCONTINUITY_CURVATURE);
-        waypointInfo.setUseStraightLine(true);
-        waypointInfo.setIsTemplateGlobalTurnModeSet(true);
+        waypointInfo.setUseStraightLine(true);// 航点间直线飞行
+        waypointInfo.setIsTemplateGlobalTurnModeSet(true); // 标记全局转弯模式已设置
         WaylineWaypointYawParam yawParam = new WaylineWaypointYawParam();
         yawParam.setYawMode(WaylineWaypointYawMode.FOLLOW_WAYLINE);
         yawParam.setPoiLocation(poiLocation);

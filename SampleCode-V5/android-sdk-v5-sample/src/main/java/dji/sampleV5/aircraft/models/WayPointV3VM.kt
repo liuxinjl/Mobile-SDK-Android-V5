@@ -281,7 +281,7 @@ class WayPointV3VM : DJIViewModel() {
     }
 
 }
-data class MissionGlobalModel( var globalSpeed:Double = 5.0,
+data class MissionGlobalModel( var globalSpeed:Double = 10.0,
                                var finishAction: WaylineFinishedAction = WaylineFinishedAction.GO_HOME,
                                 var lostAction: WaylineExitOnRCLostAction = WaylineExitOnRCLostAction.GO_BACK) {
     companion object {
