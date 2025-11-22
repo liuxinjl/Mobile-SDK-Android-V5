@@ -12,6 +12,20 @@
         android:layout_height="wrap_content"
         android:padding="16dp">
 
+        <!-- 图片展示区域 -->
+        <ImageView
+            android:id="@+id/iv_scene_image"
+            android:layout_width="0dp"
+            android:layout_height="180dp"
+            android:layout_marginBottom="12dp"
+            android:scaleType="centerCrop"
+            android:background="#F5F5F5"
+            android:contentDescription="场景图片"
+            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
         <!-- 主体 (Subject) -->
         <TextView
             android:id="@+id/tv_subject"
@@ -25,7 +39,7 @@
             android:ellipsize="end"
             app:layout_constraintEnd_toStartOf="@+id/tv_predicate"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/iv_scene_image"
             app:layout_constraintWidth_percent="0.3" />
 
         <!-- 关系箭头1 -->

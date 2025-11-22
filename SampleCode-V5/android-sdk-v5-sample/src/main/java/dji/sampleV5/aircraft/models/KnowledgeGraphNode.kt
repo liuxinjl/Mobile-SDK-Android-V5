@@ -10,6 +10,7 @@ data class KnowledgeGraphNode(
     val predicate: String,    // 关系/谓词
     val `object`: String,     // 客体
     val description: String = "",  // 描述
+    val imageUrl: String = "",
     val timestamp: Long = System.currentTimeMillis()
 )
 
@@ -26,7 +27,12 @@ object KnowledgeGraphDataGenerator {
                 subject = "场景",
                 predicate = "描述",
                 `object` = "街道交叉路口",
-                description = "这是一个俯视视角的街道交叉路口场景。路口有清晰的斑马线，路面为灰色沥青材质，分布有多个井盖。画面中有多名行人和车辆。左侧路边有两名行人正在行走，旁边停放着一辆银色轿车。路口中央有三辆电动车正在行驶，其中一辆为绿色，骑车人穿着粉色上衣；另一辆为蓝色，骑车人穿着白色上衣；第三辆为浅色，骑车人穿着深色衣物。右侧道路上有一辆银色轿车正在行驶，同时还有两辆电动车在行驶，骑车人分别穿着浅色和深色衣物。整体场景显示了日常交通状况，无明显异常活动"
+                description = "这是一个俯视视角的街道交叉路口场景。路口有清晰的斑马线，路面为灰色沥青材质，分布有多个井盖。画面中有多名行人和车辆。左侧路边有两名行人正在行走，旁边停放着一辆银色轿车。路口中央有三辆电动车正在行驶，其中一辆为绿色，骑车人穿着粉色上衣；另一辆为蓝色，骑车人穿着白色上衣；第三辆为浅色，骑车人穿着深色衣物。右侧道路上有一辆银色轿车正在行驶，同时还有两辆电动车在行驶，骑车人分别穿着浅色和深色衣物。整体场景显示了日常交通状况，无明显异常活动",
+                // 图片路径示例（请根据实际情况选择一种）：
+                // 1. 网络图片：imageUrl = "https://example.com/traffic_scene.jpg"
+                // 2. assets 目录：imageUrl = "assets://images/traffic_scene.jpg"  （推荐）
+                // 3. 本地文件：imageUrl = "file:///sdcard/Pictures/scene.jpg"
+                imageUrl = "assets://images/knowledge.jpg"  // 从 assets/images/ 目录加载
             ),
             // 对象信息三元组
             KnowledgeGraphNode(

@@ -3,10 +3,12 @@ package dji.sampleV5.aircraft.pages
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import dji.sampleV5.aircraft.R
 import dji.sampleV5.aircraft.models.KnowledgeGraphNode
+import dji.sampleV5.aircraft.utils.ImageLoader
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -21,6 +23,7 @@ class KnowledgeGraphAdapter(
     private val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+        val ivSceneImage: ImageView = view.findViewById(R.id.iv_scene_image)
         val tvSubject: TextView = view.findViewById(R.id.tv_subject)
         val tvPredicate: TextView = view.findViewById(R.id.tv_predicate)
         val tvObject: TextView = view.findViewById(R.id.tv_object)
@@ -44,6 +47,15 @@ class KnowledgeGraphAdapter(
         holder.tvDescription.text = node.description
         holder.tvTimestamp.text = dateFormat.format(Date(node.timestamp))
         holder.tvNodeId.text = "ID: ${node.id}"
+
+        // 处理图片显示
+        if (!node.imageUrl.isNullOrEmpty()) {
+            holder.ivSceneImage.visibility = View.VISIBLE
+            // 使用 ImageLoader 加载图片
+            ImageLoader.loadImage(holder.ivSceneImage, node.imageUrl)
+        } else {
+            holder.ivSceneImage.visibility = View.GONE
+        }
 
         holder.itemView.setOnClickListener {
             onItemClick(node)
