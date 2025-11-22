@@ -168,7 +168,7 @@ class WayPointV3Fragment : DJIFragment() {
     private fun initWebSocket() {
         webSocketClient = WaypointWebSocketClient(
 //            serverUrl = "ws://172.20.10.4:8080/waypoint",
-            serverUrl = "ws://192.168.111.110:8080/waypoint",
+            serverUrl = "ws://10.0.0.40:8080/waypoint",
             onWaypointsReceived = { waypoints ->
                 requireActivity().runOnUiThread {
                     receivedWaypoints.clear()
@@ -179,6 +179,13 @@ class WayPointV3Fragment : DJIFragment() {
             onMissionCommand = { command ->
                 requireActivity().runOnUiThread {
                     handleMissionCommand(command)
+                }
+            },
+            onKnowledgeCommand = {
+                // 收到知识图谱命令，自动跳转
+                requireActivity().runOnUiThread {
+                    ToastUtils.showToast("收到知识图谱命令，正在跳转...")
+                    navigateToKnowledgeGraph()
                 }
             }
         )
@@ -215,6 +222,14 @@ class WayPointV3Fragment : DJIFragment() {
                 stopMission()
                 ToastUtils.showToast("stop command received")
             }
+
+            "knowledge" -> {
+                requireActivity().runOnUiThread {
+                    ToastUtils.showToast("正在进行知识融合处理...")
+                    navigateToKnowledgeGraph()
+                }
+            }
+
 
 //            "waypoints" -> {
 //                // 传入新的航点

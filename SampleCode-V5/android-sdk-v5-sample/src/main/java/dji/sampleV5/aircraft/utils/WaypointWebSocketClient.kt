@@ -12,7 +12,8 @@ import kotlin.time.Duration
 class WaypointWebSocketClient(
     private val serverUrl: String,
     private val onWaypointsReceived: (List<CoordinateDto>) -> Unit,
-    private val onMissionCommand: (MissionCommand) -> Unit
+    private val onMissionCommand: (MissionCommand) -> Unit,
+    private val onKnowledgeCommand: (() -> Unit)? = null
 ) {
     private var webSocket: WebSocket? = null
     private val client = OkHttpClient()
@@ -61,6 +62,12 @@ class WaypointWebSocketClient(
 
                             onMissionCommand(command)
                             LogUtils.i("WebSocket", "收到命令: ${command.action}")
+                        }
+
+                        "knowledge" -> {
+                            // 触发跳转到知识图谱界面
+                            onKnowledgeCommand?.invoke()
+                            LogUtils.i("WebSocket", "收到知识图谱跳转命令")
                         }
 
                         else -> {
