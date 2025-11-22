@@ -1418,7 +1418,7 @@ class WayPointV3Fragment : DJIFragment() {
             .addToBackStack(null)
             .commit()
 
-        ToastUtils.showToast("正在跳转到知识图谱页面")
+        ToastUtils.showToast("正在进行知识融合")
     }
 
 //    fun startReturnHome() {

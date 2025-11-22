@@ -1,6 +1,8 @@
 package dji.sampleV5.aircraft.pages
 
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
@@ -26,12 +28,16 @@ class KnowledgeGraphFragment : DJIFragment() {
     private var searchEdit: EditText? = null
     private var statsText: TextView? = null
     private var emptyView: TextView? = null
+    private var loadingView: View? = null
     private var btnBack: ImageButton? = null
     private var btnRefresh: ImageButton? = null
 
     private lateinit var adapter: KnowledgeGraphAdapter
     private var allNodes: List<KnowledgeGraphNode> = emptyList()
     private var filteredNodes: List<KnowledgeGraphNode> = emptyList()
+
+    private val handler = Handler(Looper.getMainLooper())
+    private var loadingRunnable: Runnable? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -53,6 +59,7 @@ class KnowledgeGraphFragment : DJIFragment() {
         searchEdit = view.findViewById(R.id.search_edit)
         statsText = view.findViewById(R.id.stats_text)
         emptyView = view.findViewById(R.id.empty_view)
+        loadingView = view.findViewById(R.id.loading_view)
         btnBack = view.findViewById(R.id.btn_back)
         btnRefresh = view.findViewById(R.id.btn_refresh)
 
@@ -97,12 +104,46 @@ class KnowledgeGraphFragment : DJIFragment() {
      * 加载数据
      */
     private fun loadData() {
-        // 从示例数据生成器获取数据
-        // 实际应用中可以从数据库、网络或其他数据源加载
-        allNodes = KnowledgeGraphDataGenerator.getSampleData()
-        filteredNodes = allNodes
+        // 显示加载视图
+        showLoading()
 
-        updateUI()
+        // 取消之前的延迟任务
+        loadingRunnable?.let { handler.removeCallbacks(it) }
+
+        // 模拟数据处理，5秒后显示结果
+        loadingRunnable = Runnable {
+            // 从示例数据生成器获取数据
+            // 实际应用中可以从数据库、网络或其他数据源加载
+            allNodes = KnowledgeGraphDataGenerator.getSampleData()
+            filteredNodes = allNodes
+
+            // 隐藏加载视图，显示数据
+            hideLoading()
+            updateUI()
+        }
+
+        handler.postDelayed(loadingRunnable!!, 5000) // 5秒延迟
+    }
+
+    /**
+     * 显示加载视图
+     */
+    private fun showLoading() {
+        loadingView?.visibility = View.VISIBLE
+        recyclerView?.visibility = View.GONE
+        searchEdit?.visibility = View.GONE
+        statsText?.visibility = View.GONE
+        emptyView?.visibility = View.GONE
+    }
+
+    /**
+     * 隐藏加载视图
+     */
+    private fun hideLoading() {
+        loadingView?.visibility = View.GONE
+        recyclerView?.visibility = View.VISIBLE
+        searchEdit?.visibility = View.VISIBLE
+        statsText?.visibility = View.VISIBLE
     }
 
     /**
@@ -161,10 +202,15 @@ class KnowledgeGraphFragment : DJIFragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        // 移除所有延迟任务
+        loadingRunnable?.let { handler.removeCallbacks(it) }
+        loadingRunnable = null
+
         recyclerView = null
         searchEdit = null
         statsText = null
         emptyView = null
+        loadingView = null
         btnBack = null
         btnRefresh = null
     }
