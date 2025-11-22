@@ -531,6 +531,11 @@ class WayPointV3Fragment : DJIFragment() {
             })
         }
 
+        // 知识图谱按钮点击事件
+        binding?.btnKnowledgeGraph?.setOnClickListener {
+            navigateToKnowledgeGraph()
+        }
+
         addMapListener()
 
         createMapView(savedInstanceState)
@@ -1383,6 +1388,24 @@ class WayPointV3Fragment : DJIFragment() {
         }
     }
 
+    /**
+     * 导航到知识图谱页面
+     */
+    private fun navigateToKnowledgeGraph() {
+        val fragment = dji.sampleV5.aircraft.pages.KnowledgeGraphFragment()
+
+        // 使用 FragmentManager 进行页面跳转
+        // 获取当前fragment的容器ID
+        val containerId = (view?.parent as? ViewGroup)?.id ?: android.R.id.content
+
+        requireActivity().supportFragmentManager.beginTransaction()
+            .replace(containerId, fragment)
+            .addToBackStack(null)
+            .commit()
+
+        ToastUtils.showToast("正在跳转到知识图谱页面")
+    }
+
 //    fun startReturnHome() {
 //        // 创建“返航”ActionKey
 //        val goHomeKey = KeyTools.createKey(FlightControllerKey.KeyStartGoHome)
@@ -1397,3 +1420,4 @@ class WayPointV3Fragment : DJIFragment() {
 //        }
 //    }
 }
+

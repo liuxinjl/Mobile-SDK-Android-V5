@@ -150,6 +150,16 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/btn_mission_resume_with_bp" />
 
+            <Button
+                android:id="@+id/btn_knowledge_graph"
+                style="@style/main_fragment_btn"
+                android:text="知识图谱"
+                android:textColor="@color/white"
+                android:background="#4CAF50"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/btn_breakpoint_resume" />
+
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.core.widget.NestedScrollView>
 
