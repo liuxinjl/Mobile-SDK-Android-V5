@@ -31,6 +31,7 @@ class KnowledgeGraphAdapter(
         val tvTimestamp: TextView = view.findViewById(R.id.tv_timestamp)
         val tvNodeId: TextView = view.findViewById(R.id.tv_node_id)
         val tvCompressionRatio: TextView = view.findViewById(R.id.tv_compression_ratio)
+        val tvNodeType: TextView = view.findViewById(R.id.tv_node_type)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -51,6 +52,9 @@ class KnowledgeGraphAdapter(
 
         // 显示信息压缩比
         holder.tvCompressionRatio.text = "压缩比: ${node.compressionRatio}%"
+
+        // 显示节点类型
+        holder.tvNodeType.text = "类型: ${node.nodeType}"
 
         // 处理图片显示
         if (!node.imageUrl.isNullOrEmpty()) {

@@ -12,6 +12,7 @@ data class KnowledgeGraphNode(
     val description: String = "",  // 描述
     val imageUrl: String? = null,  // 图片URL（可选）
     val compressionRatio: Double = 0.9,  // 信息压缩比（默认0.9%）
+    val nodeType: String = "临时节点（用户请求）",  // 节点类型
     val timestamp: Long = System.currentTimeMillis()
 )
 

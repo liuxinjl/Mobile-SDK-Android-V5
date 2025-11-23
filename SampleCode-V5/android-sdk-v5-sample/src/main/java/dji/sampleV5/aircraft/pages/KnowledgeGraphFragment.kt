@@ -189,6 +189,7 @@ class KnowledgeGraphFragment : DJIFragment() {
     private fun showNodeDetails(node: KnowledgeGraphNode) {
         val message = """
             节点ID: ${node.id}
+            节点类型: ${node.nodeType}
             
             主体: ${node.subject}
             关系: ${node.predicate}
