@@ -195,6 +195,8 @@ class KnowledgeGraphFragment : DJIFragment() {
             客体: ${node.`object`}
             
             描述: ${node.description}
+            
+            信息压缩比: ${node.compressionRatio}%
         """.trimIndent()
 
         ToastUtils.showToast(message)
