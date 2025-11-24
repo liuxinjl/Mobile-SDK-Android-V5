@@ -168,7 +168,7 @@ class WayPointV3Fragment : DJIFragment() {
     private fun initWebSocket() {
         webSocketClient = WaypointWebSocketClient(
 //            serverUrl = "ws://172.20.10.4:8080/waypoint",
-            serverUrl = "ws://10.0.0.40:8080/waypoint",
+            serverUrl = "ws://10.101.99.110:8080/waypoint",
             onWaypointsReceived = { waypoints ->
                 requireActivity().runOnUiThread {
                     receivedWaypoints.clear()
