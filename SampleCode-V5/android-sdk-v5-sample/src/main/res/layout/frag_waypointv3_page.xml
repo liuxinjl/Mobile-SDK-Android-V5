@@ -153,12 +153,22 @@
             <Button
                 android:id="@+id/btn_knowledge_graph"
                 style="@style/main_fragment_btn"
-                android:text="知识图谱"
+                android:text="知识图谱-场景1"
                 android:textColor="@color/white"
                 android:background="#4CAF50"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/btn_breakpoint_resume" />
+
+            <Button
+                android:id="@+id/btn_knowledge_graph_scene2"
+                style="@style/main_fragment_btn"
+                android:text="知识图谱-场景2"
+                android:textColor="@color/white"
+                android:background="#2196F3"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/btn_knowledge_graph" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.core.widget.NestedScrollView>

@@ -13,7 +13,7 @@ class WaypointWebSocketClient(
     private val serverUrl: String,
     private val onWaypointsReceived: (List<CoordinateDto>) -> Unit,
     private val onMissionCommand: (MissionCommand) -> Unit,
-    private val onKnowledgeCommand: (() -> Unit)? = null
+    private val onKnowledgeCommand: ((String) -> Unit)? = null  // 修改：接收场景类型参数
 ) {
     private var webSocket: WebSocket? = null
     private val client = OkHttpClient()
@@ -65,9 +65,17 @@ class WaypointWebSocketClient(
                         }
 
                         "knowledge" -> {
-                            // 触发跳转到知识图谱界面
-                            onKnowledgeCommand?.invoke()
-                            LogUtils.i("WebSocket", "收到知识图谱跳转命令")
+                            // 触发跳转到知识图谱界面，支持场景类型参数
+                            try {
+                                val dataMap = message.data as? Map<*, *>
+                                val sceneType = dataMap?.get("sceneType") as? String ?: "scene1"
+                                onKnowledgeCommand?.invoke(sceneType)
+                                LogUtils.i("WebSocket", "收到知识图谱跳转命令，场景类型: $sceneType")
+                            } catch (e: Exception) {
+                                // 如果解析失败，使用默认场景
+                                onKnowledgeCommand?.invoke("scene1")
+                                LogUtils.i("WebSocket", "收到知识图谱跳转命令（使用默认场景）")
+                            }
                         }
 
                         else -> {

@@ -21,7 +21,21 @@ data class KnowledgeGraphNode(
  */
 object KnowledgeGraphDataGenerator {
 
-    fun getSampleData(): List<KnowledgeGraphNode> {
+    /**
+     * 获取示例数据
+     * @param sceneType 场景类型: "scene1" - 交通路口场景, "scene2" - 无人机监控场景
+     */
+    fun getSampleData(sceneType: String = "scene1"): List<KnowledgeGraphNode> {
+        return when (sceneType) {
+            "scene2" -> getScene2Data()
+            else -> getScene1Data()
+        }
+    }
+
+    /**
+     * 场景1：交通路口场景数据
+     */
+    private fun getScene1Data(): List<KnowledgeGraphNode> {
         return listOf(
             // 场景描述信息
             KnowledgeGraphNode(
@@ -130,6 +144,136 @@ object KnowledgeGraphDataGenerator {
                 `object` = "日常正常",
                 description = "整体场景显示了日常交通状况，无明显异常活动",
                 compressionRatio = 0.86
+            )
+        )
+    }
+
+    /**
+     * 场景2：无人机监控场景数据
+     */
+    private fun getScene2Data(): List<KnowledgeGraphNode> {
+        return listOf(
+            // 场景描述信息
+            KnowledgeGraphNode(
+                id = "scene2",
+                subject = "场景",
+                predicate = "描述",
+                `object` = "道路监控场景",
+                description = "图像显示一名女孩在道路上行走，她背着一个彩色背包，穿着红色裤子和白色上衣。一辆白色轿车正在道路上行驶，旁边停放着一台黄色的起重机。图像由无人机拍摄，无人机处于待命状态，操控员和指挥官各一人。无人机的经纬度为经度-77.0023°，纬度38.8974°，高度150.00米，电量为432000瓦秒。",
+                imageUrl = "assets://images/drone_scene.jpg",
+                compressionRatio = 0.49,  // 0.0049 转换为百分比 0.49%
+                nodeType = "临时节点（用户请求）"
+            ),
+            // 对象信息三元组
+            KnowledgeGraphNode(
+                id = "s2_1",
+                subject = "女孩",
+                predicate = "行走",
+                `object` = "道路",
+                description = "一名女孩在道路上行走，背着彩色背包，穿着红色裤子和白色上衣",
+                compressionRatio = 0.48,
+                nodeType = "临时节点（用户请求）"
+            ),
+            KnowledgeGraphNode(
+                id = "s2_2",
+                subject = "车辆",
+                predicate = "行驶",
+                `object` = "道路",
+                description = "一辆白色轿车正在道路上行驶",
+                compressionRatio = 0.51,
+                nodeType = "临时节点（用户请求）"
+            ),
+            KnowledgeGraphNode(
+                id = "s2_3",
+                subject = "起重机",
+                predicate = "停放",
+                `object` = "道路",
+                description = "一台黄色的起重机停放在道路旁边",
+                compressionRatio = 0.47,
+                nodeType = "临时节点（用户请求）"
+            ),
+            // 补充细节信息
+            KnowledgeGraphNode(
+                id = "s2_4",
+                subject = "女孩",
+                predicate = "穿着",
+                `object` = "红色裤子",
+                description = "女孩穿着红色裤子",
+                compressionRatio = 0.52,
+                nodeType = "临时节点（用户请求）"
+            ),
+            KnowledgeGraphNode(
+                id = "s2_5",
+                subject = "女孩",
+                predicate = "穿着",
+                `object` = "白色上衣",
+                description = "女孩穿着白色上衣",
+                compressionRatio = 0.50,
+                nodeType = "临时节点（用户请求）"
+            ),
+            KnowledgeGraphNode(
+                id = "s2_6",
+                subject = "女孩",
+                predicate = "背着",
+                `object` = "彩色背包",
+                description = "女孩背着一个彩色背包",
+                compressionRatio = 0.49,
+                nodeType = "临时节点（用户请求）"
+            ),
+            KnowledgeGraphNode(
+                id = "s2_7",
+                subject = "白色轿车",
+                predicate = "颜色为",
+                `object` = "白色",
+                description = "轿车为白色",
+                compressionRatio = 0.48,
+                nodeType = "临时节点（用户请求）"
+            ),
+            KnowledgeGraphNode(
+                id = "s2_8",
+                subject = "起重机",
+                predicate = "颜色为",
+                `object` = "黄色",
+                description = "起重机为黄色",
+                compressionRatio = 0.46,
+                nodeType = "临时节点（用户请求）"
+            ),
+            // 无人机信息
+            KnowledgeGraphNode(
+                id = "s2_9",
+                subject = "无人机",
+                predicate = "状态为",
+                `object` = "待命",
+                description = "无人机处于待命状态",
+                compressionRatio = 0.53,
+                nodeType = "临时节点（用户请求）"
+            ),
+            KnowledgeGraphNode(
+                id = "s2_10",
+                subject = "无人机",
+                predicate = "位置",
+                `object` = "经度-77.0023°纬度38.8974°",
+                description = "无人机经纬度为经度-77.0023°，纬度38.8974°，高度150.00米",
+                compressionRatio = 0.45,
+                nodeType = "临时节点（用户请求）"
+            ),
+            KnowledgeGraphNode(
+                id = "s2_11",
+                subject = "无人机",
+                predicate = "电量",
+                `object` = "432000瓦秒",
+                description = "无人机电量为432000瓦秒",
+                compressionRatio = 0.50,
+                nodeType = "临时节点（用户请求）"
+            ),
+            KnowledgeGraphNode(
+                id = "s2_12",
+                subject = "操作人员",
+                predicate = "配置",
+                `object` = "操控员和指挥官各一人",
+                description = "操控员和指挥官各一人",
+                compressionRatio = 0.51,
+                nodeType = "临时节点（用户请求）"
             )
         )
     }

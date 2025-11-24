@@ -39,6 +39,25 @@ class KnowledgeGraphFragment : DJIFragment() {
     private val handler = Handler(Looper.getMainLooper())
     private var loadingRunnable: Runnable? = null
 
+    // 场景类型参数
+    private var sceneType: String = "scene1"
+
+    companion object {
+        private const val ARG_SCENE_TYPE = "scene_type"
+
+        /**
+         * 创建 Fragment 实例
+         * @param sceneType 场景类型: "scene1" - 交通路口场景, "scene2" - 无人机监控场景
+         */
+        fun newInstance(sceneType: String = "scene1"): KnowledgeGraphFragment {
+            val fragment = KnowledgeGraphFragment()
+            val args = Bundle()
+            args.putString(ARG_SCENE_TYPE, sceneType)
+            fragment.arguments = args
+            return fragment
+        }
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -49,6 +68,10 @@ class KnowledgeGraphFragment : DJIFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        // 获取场景类型参数
+        sceneType = arguments?.getString(ARG_SCENE_TYPE) ?: "scene1"
+
         initViews(view)
         initRecyclerView()
         loadData()
@@ -112,9 +135,9 @@ class KnowledgeGraphFragment : DJIFragment() {
 
         // 模拟数据处理，5秒后显示结果
         loadingRunnable = Runnable {
-            // 从示例数据生成器获取数据
+            // 从示例数据生成器获取数据，根据场景类型加载不同数据
             // 实际应用中可以从数据库、网络或其他数据源加载
-            allNodes = KnowledgeGraphDataGenerator.getSampleData()
+            allNodes = KnowledgeGraphDataGenerator.getSampleData(sceneType)
             filteredNodes = allNodes
 
             // 隐藏加载视图，显示数据

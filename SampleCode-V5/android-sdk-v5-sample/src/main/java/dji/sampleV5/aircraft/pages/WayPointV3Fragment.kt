@@ -168,7 +168,7 @@ class WayPointV3Fragment : DJIFragment() {
     private fun initWebSocket() {
         webSocketClient = WaypointWebSocketClient(
 //            serverUrl = "ws://172.20.10.4:8080/waypoint",
-            serverUrl = "ws://10.101.99.110:8080/waypoint",
+            serverUrl = "ws://192.168.50.167:8080/waypoint",
             onWaypointsReceived = { waypoints ->
                 requireActivity().runOnUiThread {
                     receivedWaypoints.clear()
@@ -181,11 +181,15 @@ class WayPointV3Fragment : DJIFragment() {
                     handleMissionCommand(command)
                 }
             },
-            onKnowledgeCommand = {
-                // 收到知识图谱命令，自动跳转
+            onKnowledgeCommand = { sceneType ->
+                // 收到知识图谱命令，根据场景类型自动跳转
                 requireActivity().runOnUiThread {
-                    ToastUtils.showToast("收到知识图谱命令，正在跳转...")
-                    navigateToKnowledgeGraph()
+                    val sceneName = when (sceneType) {
+                        "scene2" -> "无人机监控场景"
+                        else -> "交通路口场景"
+                    }
+                    ToastUtils.showToast("收到知识图谱命令，正在跳转到$sceneName...")
+                    navigateToKnowledgeGraph(sceneType)
                 }
             }
         )
@@ -225,8 +229,10 @@ class WayPointV3Fragment : DJIFragment() {
 
             "knowledge" -> {
                 requireActivity().runOnUiThread {
+                    val dataMap = command.params as? Map<*, *>
+                    val sceneType = dataMap?.get("sceneType") as? String ?: "scene1"
                     ToastUtils.showToast("正在进行知识融合处理...")
-                    navigateToKnowledgeGraph()
+                    navigateToKnowledgeGraph(sceneType)
                 }
             }
 
@@ -546,9 +552,14 @@ class WayPointV3Fragment : DJIFragment() {
             })
         }
 
-        // 知识图谱按钮点击事件
+        // 知识图谱场景1按钮点击事件
         binding?.btnKnowledgeGraph?.setOnClickListener {
-            navigateToKnowledgeGraph()
+            navigateToKnowledgeGraph("scene1")
+        }
+
+        // 知识图谱场景2按钮点击事件
+        binding?.btnKnowledgeGraphScene2?.setOnClickListener {
+            navigateToKnowledgeGraph("scene2")
         }
 
         addMapListener()
@@ -1405,9 +1416,10 @@ class WayPointV3Fragment : DJIFragment() {
 
     /**
      * 导航到知识图谱页面
+     * @param sceneType 场景类型: "scene1" - 交通路口场景, "scene2" - 无人机监控场景
      */
-    private fun navigateToKnowledgeGraph() {
-        val fragment = dji.sampleV5.aircraft.pages.KnowledgeGraphFragment()
+    private fun navigateToKnowledgeGraph(sceneType: String = "scene1") {
+        val fragment = KnowledgeGraphFragment.newInstance(sceneType)
 
         // 使用 FragmentManager 进行页面跳转
         // 获取当前fragment的容器ID
@@ -1418,7 +1430,8 @@ class WayPointV3Fragment : DJIFragment() {
             .addToBackStack(null)
             .commit()
 
-        ToastUtils.showToast("正在进行知识融合")
+        val sceneName = if (sceneType == "scene2") "无人机监控场景" else "交通路口场景"
+        ToastUtils.showToast("正在加载$sceneName")
     }
 
 //    fun startReturnHome() {
