@@ -170,6 +170,16 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/btn_knowledge_graph" />
 
+            <Button
+                android:id="@+id/btn_knowledge_graph_scene3"
+                style="@style/main_fragment_btn"
+                android:text="知识图谱-场景3"
+                android:textColor="@color/white"
+                android:background="#FF9800"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/btn_knowledge_graph_scene2" />
+
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.core.widget.NestedScrollView>
 

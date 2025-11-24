@@ -186,6 +186,7 @@ class WayPointV3Fragment : DJIFragment() {
                 requireActivity().runOnUiThread {
                     val sceneName = when (sceneType) {
                         "scene2" -> "无人机监控场景"
+                        "scene3" -> "停车场场景"
                         else -> "交通路口场景"
                     }
                     ToastUtils.showToast("收到知识图谱命令，正在跳转到$sceneName...")
@@ -560,6 +561,11 @@ class WayPointV3Fragment : DJIFragment() {
         // 知识图谱场景2按钮点击事件
         binding?.btnKnowledgeGraphScene2?.setOnClickListener {
             navigateToKnowledgeGraph("scene2")
+        }
+
+        // 知识图谱场景3按钮点击事件
+        binding?.btnKnowledgeGraphScene3?.setOnClickListener {
+            navigateToKnowledgeGraph("scene3")
         }
 
         addMapListener()
@@ -1416,7 +1422,7 @@ class WayPointV3Fragment : DJIFragment() {
 
     /**
      * 导航到知识图谱页面
-     * @param sceneType 场景类型: "scene1" - 交通路口场景, "scene2" - 无人机监控场景
+     * @param sceneType 场景类型: "scene1" - 交通路口场景, "scene2" - 无人机监控场景, "scene3" - 停车场场景
      */
     private fun navigateToKnowledgeGraph(sceneType: String = "scene1") {
         val fragment = KnowledgeGraphFragment.newInstance(sceneType)
@@ -1430,8 +1436,14 @@ class WayPointV3Fragment : DJIFragment() {
             .addToBackStack(null)
             .commit()
 
-        val sceneName = if (sceneType == "scene2") "无人机监控场景" else "交通路口场景"
-        ToastUtils.showToast("正在加载$sceneName")
+//        val sceneName = when (sceneType) {
+//            "scene2" -> "进行知识融合处理"
+//            "scene3" -> "停车场场景"
+//            else -> "交通路口场景"
+//        }
+//
+        val sceneName = "进行知识融合处理"
+        ToastUtils.showToast("正在$sceneName")
     }
 
 //    fun startReturnHome() {
