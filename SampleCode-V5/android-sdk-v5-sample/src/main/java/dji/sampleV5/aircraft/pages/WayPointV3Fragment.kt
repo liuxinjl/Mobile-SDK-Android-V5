@@ -158,17 +158,48 @@ class WayPointV3Fragment : DJIFragment() {
         initData()
         WPMZManager.getInstance().init(ContextUtil.getContext())
 
-        // 界面初始化后执行 websocket 初始化
-        initWebSocket()
+        // 加载保存的 WebSocket 地址
+        loadSavedWebSocketUrl()
+
+        // 界面加载完成后，自动尝试连接 WebSocket
+        view.post {
+            initWebSocket()
+        }
+    }
+
+    /**
+     * 加载保存的 WebSocket 地址
+     */
+    private fun loadSavedWebSocketUrl() {
+        val savedUrl = requireContext().getSharedPreferences("websocket_config", android.content.Context.MODE_PRIVATE)
+            .getString("server_url", "ws://192.168.50.167:8080/waypoint")
+        binding?.etWebsocketUrl?.setText(savedUrl)
     }
 
     /**
      * 初始化 websocket
      */
     private fun initWebSocket() {
+        // 从文本框获取 WebSocket 地址
+        val serverUrl = binding?.etWebsocketUrl?.text?.toString()?.trim()
+        if (serverUrl.isNullOrEmpty()) {
+            ToastUtils.showToast("请输入 WebSocket 地址")
+            return
+        }
+
+        // 保存地址到 SharedPreferences
+        requireContext().getSharedPreferences("websocket_config", android.content.Context.MODE_PRIVATE)
+            .edit()
+            .putString("server_url", serverUrl)
+            .apply()
+
+        // 如果已经连接，先断开
+        webSocketClient?.disconnect()
+
+        ToastUtils.showToast("正在连接: $serverUrl")
+
         webSocketClient = WaypointWebSocketClient(
-//            serverUrl = "ws://172.20.10.4:8080/waypoint",
-            serverUrl = "ws://192.168.50.167:8080/waypoint",
+            serverUrl = serverUrl,
             onWaypointsReceived = { waypoints ->
                 requireActivity().runOnUiThread {
                     receivedWaypoints.clear()
@@ -551,6 +582,11 @@ class WayPointV3Fragment : DJIFragment() {
                     ToastUtils.showToast("queryBreakPointInfo error $error")
                 }
             })
+        }
+
+        // WebSocket 连接按钮点击事件
+        binding?.btnWebsocketConnect?.setOnClickListener {
+            initWebSocket()
         }
 
         // 知识图谱场景1按钮点击事件
